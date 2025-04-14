@@ -26,6 +26,7 @@
         </div>
     </div>
     @include('dashboard.partials.script')
+    @stack('script')
 </body>
 
 </html>

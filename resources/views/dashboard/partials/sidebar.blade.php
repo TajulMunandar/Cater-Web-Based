@@ -2,8 +2,8 @@
     <!-- Sidebar scroll-->
     <div>
         <div class="brand-logo d-flex align-items-center justify-content-between">
-            <a href="/" class=" text-black fs-4 fw-bolder">
-                Cater Perumda Tirta Pase
+            <a href="/" class=" text-black fs-6 fw-bolder">
+                <img src="{{ asset('assets/images/logos/logo.png') }}" alt="" class="w-25">Catat Meter
             </a>
             <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
                 <i class="ti ti-x fs-8"></i>
@@ -25,7 +25,8 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" href="/cater" aria-expanded="false">
+                    <a class="sidebar-link {{ request()->is('cater*') ? 'active' : '' }}" href="/cater"
+                        aria-expanded="false">
                         <span>
                             <i class="ti ti-target"></i>
                         </span>
@@ -33,7 +34,8 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" href="/cater" aria-expanded="false">
+                    <a class="sidebar-link {{ request()->is('data-rekap*') ? 'active' : '' }}" href="/data-rekap"
+                        aria-expanded="false">
                         <span>
                             <i class="ti ti-dashboard"></i>
                         </span>
@@ -45,7 +47,8 @@
                     <span class="hide-menu">Data Master</span>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" href="./ui-buttons.html" aria-expanded="false">
+                    <a class="sidebar-link {{ request()->is('pelanggan*') ? 'active' : '' }}" href="/pelanggan/index"
+                        aria-expanded="false">
                         <span>
                             <i class="ti ti-users"></i>
                         </span>
@@ -53,7 +56,8 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" href="./ui-alerts.html" aria-expanded="false">
+                    <a class="sidebar-link {{ request()->is('settings*') ? 'active' : '' }}" href="/settings"
+                        aria-expanded="false">
                         <span>
                             <i class="ti ti-settings"></i>
                         </span>
@@ -61,7 +65,8 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" href="./ui-card.html" aria-expanded="false">
+                    <a class="sidebar-link {{ request()->is('info') ? 'active' : '' }}" href="/info"
+                        aria-expanded="false">
                         <span>
                             <i class="ti ti-help"></i>
                         </span>

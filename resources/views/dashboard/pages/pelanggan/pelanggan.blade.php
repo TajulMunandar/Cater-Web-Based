@@ -1,0 +1,76 @@
+@extends('dashboard.partials.main')
+
+@section('content')
+    <div class="row">
+        <div class="col">
+
+            <h3>Data Pelanggan</h3>
+        </div>
+        <div class="col">
+            <button class="btn btn-primary float-end">Tambah</button>
+        </div>
+    </div>
+    <div class="row mt-2">
+
+        <div class="card p-3">
+            <ul class="nav nav-pills ">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/pelanggan/index">Data Pelanggan</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pelanggan/pelanggan-baru">Data Pelanggan Baru</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pelanggan/peta">Peta Pelanggan</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link " aria-current="page" href="/pelanggan/dsml">DSML</a>
+                </li>
+            </ul>
+            <div class="card-body">
+                <table class="table" id="myTable">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Alamat</th>
+                            <th>Telepon</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>John Doe</td>
+                            <td>Jl. Raya</td>
+                            <td>08123456789</td>
+                            <td>
+                                <button class="btn btn-warning">Edit</button>
+                                <button class="btn btn-danger">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('script')
+    <script>
+        $(document).ready(function() {
+            $('#myTable').DataTable({
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search...",
+                    "decimal": ",",
+                    "thousands": ".",
+                },
+            });
+
+            $('.dataTables_filter input[type="search"]').css({
+                "marginBottom": "10px"
+            });
+        });
+    </script>
+@endpush
