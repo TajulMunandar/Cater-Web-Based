@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Modernize Free</title>
+    <title>Catat Meter Perumda Tirta Pase</title>
     @include('dashboard.partials.head')
 </head>
 
