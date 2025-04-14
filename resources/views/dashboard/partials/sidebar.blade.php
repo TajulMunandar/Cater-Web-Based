@@ -25,7 +25,7 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->is('cater*') ? 'active' : '' }}" href="/cater"
+                    <a class="sidebar-link {{ request()->is('cater*') ? 'active' : '' }}" href="/cater/index"
                         aria-expanded="false">
                         <span>
                             <i class="ti ti-target"></i>
@@ -34,7 +34,7 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->is('data-rekap*') ? 'active' : '' }}" href="/data-rekap"
+                    <a class="sidebar-link {{ request()->is('rekap*') ? 'active' : '' }}" href="/rekap/index"
                         aria-expanded="false">
                         <span>
                             <i class="ti ti-dashboard"></i>
@@ -56,7 +56,7 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->is('settings*') ? 'active' : '' }}" href="/settings"
+                    <a class="sidebar-link {{ request()->is('settings*') ? 'active' : '' }}" href="/settings/index"
                         aria-expanded="false">
                         <span>
                             <i class="ti ti-settings"></i>

@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col">
 
-            <h3>DSML</h3>
+            <h3>Catat Meter</h3>
         </div>
         <div class="col">
             <button class="btn btn-primary float-end">Tambah</button>
@@ -15,16 +15,13 @@
         <div class="card p-3">
             <ul class="nav nav-pills ">
                 <li class="nav-item">
-                    <a class="nav-link" href="/pelanggan/index">Data Pelanggan</a>
+                    <a class="nav-link active" href="/cater/index">Catat Meter</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/pelanggan/pelanggan-baru">Data Pelanggan Baru</a>
+                    <a class="nav-link " href="/cater/tidak-terdaftar">Catat Meter Tidak Terdaftar</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/pelanggan/peta">Peta Pelanggan</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/pelanggan/dsml">DSML</a>
+                    <a class="nav-link" href="/cater/urutan">Urutan Catat Meter</a>
                 </li>
             </ul>
             <div class="card-body">

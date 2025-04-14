@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col">
 
-            <h3>Data Pelanggan</h3>
+            <h3>Data Pelanggan Baru</h3>
         </div>
         <div class="col">
             <button class="btn btn-primary float-end">Tambah</button>
@@ -58,6 +58,7 @@
 
 @push('script')
     <script>
+        var isMobile = window.innerWidth <= 768;
         $(document).ready(function() {
             $('#myTable').DataTable({
                 "language": {
@@ -66,6 +67,7 @@
                     "decimal": ",",
                     "thousands": ".",
                 },
+                "scrollX": isMobile,
             });
 
             $('.dataTables_filter input[type="search"]').css({

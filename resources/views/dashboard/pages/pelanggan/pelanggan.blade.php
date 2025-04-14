@@ -58,6 +58,7 @@
 
 @push('script')
     <script>
+        var isMobile = window.innerWidth <= 768;
         $(document).ready(function() {
             $('#myTable').DataTable({
                 "language": {
@@ -66,6 +67,7 @@
                     "decimal": ",",
                     "thousands": ".",
                 },
+                "scrollX": isMobile,
             });
 
             $('.dataTables_filter input[type="search"]').css({

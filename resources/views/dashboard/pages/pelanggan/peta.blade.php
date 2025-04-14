@@ -4,16 +4,15 @@
     <div class="row">
         <div class="col">
 
-            <h3>Data Pelanggan</h3>
+            <h3>Peta Pelanggan</h3>
         </div>
         <div class="col">
             <button class="btn btn-primary float-end">Tambah</button>
         </div>
     </div>
     <div class="row mt-2">
-
         <div class="card p-3">
-            <ul class="nav nav-pills ">
+            <ul class="nav nav-pills">
                 <li class="nav-item">
                     <a class="nav-link" href="/pelanggan/index">Data Pelanggan</a>
                 </li>
@@ -58,6 +57,7 @@
 
 @push('script')
     <script>
+        var isMobile = window.innerWidth <= 768;
         $(document).ready(function() {
             $('#myTable').DataTable({
                 "language": {
@@ -66,6 +66,7 @@
                     "decimal": ",",
                     "thousands": ".",
                 },
+                "scrollX": isMobile,
             });
 
             $('.dataTables_filter input[type="search"]').css({

@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col">
 
-            <h3>DSML</h3>
+            <h3>Informasi</h3>
         </div>
         <div class="col">
             <button class="btn btn-primary float-end">Tambah</button>
@@ -13,20 +13,6 @@
     <div class="row mt-2">
 
         <div class="card p-3">
-            <ul class="nav nav-pills ">
-                <li class="nav-item">
-                    <a class="nav-link" href="/pelanggan/index">Data Pelanggan</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/pelanggan/pelanggan-baru">Data Pelanggan Baru</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/pelanggan/peta">Peta Pelanggan</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/pelanggan/dsml">DSML</a>
-                </li>
-            </ul>
             <div class="card-body">
                 <table class="table" id="myTable">
                     <thead>
