@@ -13,11 +13,16 @@ return new class extends Migration
     {
         Schema::create('petugas', function (Blueprint $table) {
             $table->id();
-            $table->string('photo')->nullable();
-            $table->string('nama_lengkap');
-            $table->string('nik')->unique();
-            $table->string('no_hp');
-            $table->string('email')->unique();
+            $table->string('photo', 100)->nullable();
+            $table->string('nama', 50);
+            $table->string('nip', 30)->unique();
+            $table->string('no_hp1', 13);
+            $table->string('no_hp2', 13)->nullable();
+            $table->string('email', 50)->unique();
+            $table->string('username', 30)->unique();
+            $table->string('password', 25);
+            $table->string('tipe_pekerjaan', 40);
+            $table->tinyInteger('level');
             $table->string('jenis_pekerjaan', 35);
             $table->timestamps();
         });
