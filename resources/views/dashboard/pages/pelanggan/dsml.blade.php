@@ -34,7 +34,11 @@
                             <th>No</th>
                             <th>Nama</th>
                             <th>Alamat</th>
-                            <th>Telepon</th>
+                            <th>No Sambung</th>
+                            <th>No Kontrol</th>
+                            <th>Type</th>
+                            <th>Wilayah</th>
+                            <th>Nilai</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -43,6 +47,10 @@
                             <td>1</td>
                             <td>John Doe</td>
                             <td>Jl. Raya</td>
+                            <td>08123456789</td>
+                            <td>08123456789</td>
+                            <td>08123456789</td>
+                            <td>08123456789</td>
                             <td>08123456789</td>
                             <td>
                                 <button class="btn btn-warning">Edit</button>

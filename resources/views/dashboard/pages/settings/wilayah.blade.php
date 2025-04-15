@@ -29,9 +29,9 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Nama</th>
-                            <th>Alamat</th>
-                            <th>Telepon</th>
+                            <th>Kode Wilayah</th>
+                            <th>Nama Wilayah</th>
+                            <th>Cabang</th>
                             <th>Action</th>
                         </tr>
                     </thead>

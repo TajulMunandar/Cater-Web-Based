@@ -29,9 +29,15 @@
                     <thead>
                         <tr>
                             <th>No</th>
+                            <th>Photo</th>
+                            <th>Stand Meter</th>
+                            <th>Waktu</th>
                             <th>Nama</th>
-                            <th>Alamat</th>
-                            <th>Telepon</th>
+                            <th>No Kontrol</th>
+                            <th>No Sambung</th>
+                            <th>Wilayah</th>
+                            <th>Kondisi Meter</th>
+                            <th>Petugas</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -40,6 +46,12 @@
                             <td>1</td>
                             <td>John Doe</td>
                             <td>Jl. Raya</td>
+                            <td>08123456789</td>
+                            <td>08123456789</td>
+                            <td>08123456789</td>
+                            <td>08123456789</td>
+                            <td>08123456789</td>
+                            <td>08123456789</td>
                             <td>08123456789</td>
                             <td>
                                 <button class="btn btn-warning">Edit</button>
@@ -64,7 +76,7 @@
                     "decimal": ",",
                     "thousands": ".",
                 },
-                "scrollX": isMobile,
+                "scrollX": true,
             });
 
             $('.dataTables_filter input[type="search"]').css({

@@ -18,9 +18,10 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Nama</th>
+                            <th>Waktu</th>
+                            <th>Jenis Info</th>
+                            <th>Info</th>
                             <th>Alamat</th>
-                            <th>Telepon</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -29,6 +30,7 @@
                             <td>1</td>
                             <td>John Doe</td>
                             <td>Jl. Raya</td>
+                            <td>08123456789</td>
                             <td>08123456789</td>
                             <td>
                                 <button class="btn btn-warning">Edit</button>
