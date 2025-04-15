@@ -9,4 +9,7 @@ class Wilayah extends Model
 {
     /** @use HasFactory<\Database\Factories\WilayahFactory> */
     use HasFactory;
+    protected $guarded = [
+        'id',
+    ];
 }

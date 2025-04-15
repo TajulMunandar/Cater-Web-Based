@@ -9,4 +9,7 @@ class FotoPemutusan extends Model
 {
     /** @use HasFactory<\Database\Factories\FotoPemutusanFactory> */
     use HasFactory;
+    protected $guarded = [
+        'id',
+    ];
 }

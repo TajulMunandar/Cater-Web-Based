@@ -9,4 +9,8 @@ class CatatMeter extends Model
 {
     /** @use HasFactory<\Database\Factories\CatatMeterFactory> */
     use HasFactory;
+
+    protected $guarded = [
+        'id',
+    ];
 }

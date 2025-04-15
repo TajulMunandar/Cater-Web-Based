@@ -9,4 +9,7 @@ class FotoGantiMeter extends Model
 {
     /** @use HasFactory<\Database\Factories\FotoGantiMeterFactory> */
     use HasFactory;
+    protected $guarded = [
+        'id',
+    ];
 }

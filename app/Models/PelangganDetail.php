@@ -9,4 +9,7 @@ class PelangganDetail extends Model
 {
     /** @use HasFactory<\Database\Factories\PelangganDetailFactory> */
     use HasFactory;
+    protected $guarded = [
+        'id',
+    ];
 }

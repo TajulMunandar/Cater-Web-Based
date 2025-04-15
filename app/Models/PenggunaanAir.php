@@ -9,4 +9,7 @@ class PenggunaanAir extends Model
 {
     /** @use HasFactory<\Database\Factories\PenggunaanAirFactory> */
     use HasFactory;
+    protected $guarded = [
+        'id',
+    ];
 }

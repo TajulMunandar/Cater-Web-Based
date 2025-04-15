@@ -9,4 +9,7 @@ class KondisiMeter extends Model
 {
     /** @use HasFactory<\Database\Factories\KondisiMeterFactory> */
     use HasFactory;
+    protected $guarded = [
+        'id',
+    ];
 }

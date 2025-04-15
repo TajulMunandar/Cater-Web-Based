@@ -9,4 +9,7 @@ class Petugas extends Model
 {
     /** @use HasFactory<\Database\Factories\PetugasFactory> */
     use HasFactory;
+    protected $guarded = [
+        'id',
+    ];
 }

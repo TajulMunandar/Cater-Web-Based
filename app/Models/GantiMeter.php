@@ -9,4 +9,7 @@ class GantiMeter extends Model
 {
     /** @use HasFactory<\Database\Factories\GantiMeterFactory> */
     use HasFactory;
+    protected $guarded = [
+        'id',
+    ];
 }

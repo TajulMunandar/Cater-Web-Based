@@ -9,4 +9,7 @@ class Info extends Model
 {
     /** @use HasFactory<\Database\Factories\InfoFactory> */
     use HasFactory;
+    protected $guarded = [
+        'id',
+    ];
 }
