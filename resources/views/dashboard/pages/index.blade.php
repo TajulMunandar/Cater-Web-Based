@@ -407,3 +407,7 @@
                 href="https://themewagon.com">ThemeWagon</a></p>
     </div>
 @endsection
+@push('script')
+    <script src="{{ asset('assets/libs/apexcharts/dist/apexcharts.min.js') }}"></script>
+    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+@endpush
