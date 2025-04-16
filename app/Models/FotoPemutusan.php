@@ -12,4 +12,9 @@ class FotoPemutusan extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function Pemutusan()
+    {
+        return $this->belongsTo(Pemutusan::class, 'id_pemutus');
+    }
 }

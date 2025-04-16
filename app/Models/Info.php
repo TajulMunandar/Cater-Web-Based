@@ -12,4 +12,9 @@ class Info extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function Petugas()
+    {
+        return $this->belongsTo(Petugas::class, 'id_petugas');
+    }
 }

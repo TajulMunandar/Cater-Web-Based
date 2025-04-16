@@ -12,4 +12,25 @@ class Petugas extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function GantiMeter()
+    {
+        return $this->hasMany(GantiMeter::class, 'id_petugas', 'id');
+    }
+    public function CatatMeter()
+    {
+        return $this->hasMany(CatatMeter::class, 'id_petugas', 'id');
+    }
+    public function Pemutusan()
+    {
+        return $this->hasMany(Pemutusan::class, 'id_petugas', 'id');
+    }
+    public function PelangganDetail()
+    {
+        return $this->hasMany(PelangganDetail::class, 'id_petugas', 'id');
+    }
+    public function Info()
+    {
+        return $this->hasMany(info::class, 'id_petugas', 'id');
+    }
 }

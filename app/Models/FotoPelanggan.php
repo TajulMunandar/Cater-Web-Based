@@ -12,4 +12,9 @@ class FotoPelanggan extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function Pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class, 'id_pelanggan');
+    }
 }

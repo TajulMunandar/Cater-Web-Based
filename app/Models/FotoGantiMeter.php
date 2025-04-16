@@ -12,4 +12,9 @@ class FotoGantiMeter extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function GantiMeter()
+    {
+        return $this->belongsTo(GantiMeter::class, 'id_ganti_meter');
+    }
 }

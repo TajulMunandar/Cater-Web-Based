@@ -12,4 +12,24 @@ class KondisiMeter extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function CatatMeter()
+    {
+        return $this->hasMany(CatatMeter::class, 'id_kondisi', 'id');
+    }
+
+    public function GantiMeter()
+    {
+        return $this->hasMany(GantiMeter::class, 'id_kondisi', 'id');
+    }
+
+    public function PelangganDetail()
+    {
+        return $this->hasMany(PelangganDetail::class, 'id_kondisi', 'id');
+    }
+
+    public function Pemutusan()
+    {
+        return $this->hasMany(Pemutusan::class, 'id_kondisi', 'id');
+    }
 }

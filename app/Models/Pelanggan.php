@@ -12,4 +12,29 @@ class Pelanggan extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function GantiMeter()
+    {
+        return $this->hasMany(GantiMeter::class, 'id_pelanggan', 'id');
+    }
+    public function CatatMeter()
+    {
+        return $this->hasMany(CatatMeter::class, 'id_pelanggan', 'id');
+    }
+    public function Pemutusan()
+    {
+        return $this->hasMany(Pemutusan::class, 'id_pelanggan', 'id');
+    }
+    public function PelangganDetail()
+    {
+        return $this->hasMany(PelangganDetail::class, 'id_pelanggan', 'id');
+    }
+    public function PenggunaanAir()
+    {
+        return $this->hasMany(PenggunaanAir::class, 'id_pelanggan', 'id');
+    }
+    public function FotoPelanggan()
+    {
+        return $this->hasMany(FotoPelanggan::class, 'id_pelanggan', 'id');
+    }
 }

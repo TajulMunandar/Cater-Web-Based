@@ -12,4 +12,9 @@ class FotoCater extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function CatatMeter()
+    {
+        return $this->belongsTo(CatatMeter::class, 'id_cater');
+    }
 }

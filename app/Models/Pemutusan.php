@@ -12,4 +12,19 @@ class Pemutusan extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function Pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class, 'id_pelanggan');
+    }
+
+    public function Kondisi()
+    {
+        return $this->belongsTo(KondisiMeter::class, 'id_kondisi');
+    }
+
+    public function FotoPemutusan()
+    {
+        return $this->hasMany(FotoPemutusan::class, 'id_pemutus', 'id');
+    }
 }

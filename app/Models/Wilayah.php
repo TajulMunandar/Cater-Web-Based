@@ -12,4 +12,9 @@ class Wilayah extends Model
     protected $guarded = [
         'id',
     ];
+
+    public function PelangganDetail()
+    {
+        return $this->hasMany(PelangganDetail::class, 'id_wilayah');
+    }
 }
