@@ -4,10 +4,43 @@
     <div class="row">
         <div class="col">
 
-            <h3>Wilayah</h3>
+            <h3 class="fw-bolder">Wilayah</h3>
         </div>
         <div class="col">
-            <button class="btn btn-primary float-end">Tambah</button>
+            <button class="btn btn-primary float-end" data-bs-toggle="modal"
+                data-bs-target="#createWilayahModal">Tambah</button>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col">
+            @if (session()->has('success'))
+                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session()->has('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session()->has('delete'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('delete') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session()->has('update'))
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ session('update') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
         </div>
     </div>
     <div class="row mt-2">
@@ -29,8 +62,8 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Kode Wilayah</th>
                             <th>Nama Wilayah</th>
+                            <th>Kode Wilayah</th>
                             <th>Cabang</th>
                             <th>Action</th>
                         </tr>
@@ -39,10 +72,41 @@
 
                     </tbody>
                 </table>
-                <div id="dynamicModalContainer"></div>
             </div>
         </div>
     </div>
+    <x-modal id="createWilayahModal" title="Tambah Wilayah" route="{{ route('wilayah.store') }}" method="POST"
+        primaryBtnTitle="Simpan" secondaryBtnTitle="Batal">
+        <div class="mb-3">
+            <label for="wilayah" class="form-label">Nama Wilayah</label>
+            <input type="text" class="form-control" id="wilayah" name="wilayah" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="kode" class="form-label">Kode</label>
+            <input type="text" class="form-control" id="kode" name="kode" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="ket" class="form-label">Keterangan</label>
+            <input type="text" class="form-control" id="ket" name="ket" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="cabang" class="form-label">Cabang</label>
+            <input type="text" class="form-control" id="cabang" name="cabang" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="center_lat" class="form-label">Center Latitude</label>
+            <input type="text" class="form-control" id="center_lat" name="center_lat" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="center_long" class="form-label">Center Longitude</label>
+            <input type="text" class="form-control" id="center_long" name="center_long" required>
+        </div>
+    </x-modal>
 @endsection
 
 @push('script')
@@ -60,13 +124,14 @@
                         searchable: false
                     },
                     {
-                        data: 'kode',
-                        name: 'kode'
-                    },
-                    {
                         data: 'wilayah',
                         name: 'wilayah'
                     },
+                    {
+                        data: 'kode',
+                        name: 'kode'
+                    },
+
                     {
                         data: 'cabang',
                         name: 'cabang'

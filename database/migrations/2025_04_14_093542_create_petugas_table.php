@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('no_hp2', 13)->nullable();
             $table->string('email', 50)->unique();
             $table->string('username', 30)->unique();
-            $table->string('password', 25);
+            $table->string('password', 255);
             $table->string('tipe_pekerjaan', 40);
             $table->tinyInteger('level');
             $table->string('jenis_pekerjaan', 35);

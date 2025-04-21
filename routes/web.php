@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\InfoController;
+use App\Http\Controllers\KondisiController;
+use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 
@@ -55,10 +57,8 @@ route::prefix('/settings')->group(function () {
 
     Route::get('/wilayahs/data', [WilayahController::class, 'data'])->name('wilayah.data');
 
-    Route::get('/kondisi', function () {
-        return view('dashboard.pages.settings.kondisi');
-    });
-    Route::get('/petugas', function () {
-        return view('dashboard.pages.settings.petugas');
-    });
+    Route::resource('/kondisi', KondisiController::class);
+
+    Route::resource('/petugas', PetugasController::class);
+    Route::get('/petugases/data', [PetugasController::class, 'data'])->name('petugas.data');
 });

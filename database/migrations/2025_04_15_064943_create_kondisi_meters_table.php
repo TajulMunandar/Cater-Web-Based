@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('kondisi', 20);
             $table->string('keterangan', 50);
+            $table->string('kode', 20);
             $table->timestamps();
         });
     }

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Catat Meter Perumda Tirta Pase</title>
     @include('dashboard.partials.head')
+    @stack('head')
 </head>
 
 <body>

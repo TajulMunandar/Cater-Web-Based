@@ -7,9 +7,43 @@
             <h3>Kondisi</h3>
         </div>
         <div class="col">
-            <button class="btn btn-primary float-end">Tambah</button>
+            <button class="btn btn-primary float-end" data-bs-toggle="modal"
+                data-bs-target="#createKondisiMeterModal">Tambah</button>
         </div>
     </div>
+
+    <div class="row mt-3">
+        <div class="col">
+            @if (session()->has('success'))
+                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session()->has('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session()->has('delete'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('delete') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session()->has('update'))
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ session('update') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+        </div>
+    </div>
+
     <div class="row mt-2">
 
         <div class="card p-3">
@@ -31,24 +65,87 @@
                             <th>No</th>
                             <th>Kondisi Meter</th>
                             <th>Kode</th>
+                            <th>Keterangan</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>John Doe</td>
-                            <td>08123456789</td>
-                            <td>
-                                <button class="btn btn-warning">Edit</button>
-                                <button class="btn btn-danger">Delete</button>
-                            </td>
-                        </tr>
+                        @foreach ($kondisis as $kondisi)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $kondisi->kondisi }}</td>
+                                <td>{{ $kondisi->kode }}</td>
+                                <td>
+                                    @if ($kondisi->keterangan == null)
+                                        -
+                                    @else
+                                        {{ $kondisi->keterangan }}
+                                    @endif
+                                </td>
+                                <td>
+                                    <button class="btn btn-warning" data-bs-toggle="modal"
+                                        data-bs-target="#editModal{{ $loop->iteration }}">Edit</button>
+                                    <button class="btn btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal{{ $loop->iteration }}">Delete</button>
+                                </td>
+                            </tr>
+
+                            <!-- Modal Edit Informasi -->
+                            <x-modal id="editModal{{ $loop->iteration }}" title="Edit Kondisi Meter"
+                                route="{{ route('kondisi.update', $kondisi->id) }}" method="PUT"
+                                primaryBtnTitle="Save Changes" primaryBtnClass="btn-warning">
+                                <div class="mb-3">
+                                    <label for="kondisi" class="form-label">Kondisi</label>
+                                    <input type="text" class="form-control" id="kondisi" name="kondisi"
+                                        value="{{ $kondisi->kondisi }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="kode" class="form-label">Kode</label>
+                                    <input type="text" class="form-control" id="kode" name="kode"
+                                        value="{{ $kondisi->kode }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="keterangan" class="form-label">Keterangan</label>
+                                    <input type="text" class="form-control" id="keterangan" name="keterangan"
+                                        value="{{ $kondisi->keterangan }}" required>
+                                </div>
+                            </x-modal>
+
+                            <!-- Modal Hapus Informasi -->
+                            <x-modal id="deleteModal{{ $loop->iteration }}" title="Delete Info"
+                                route="{{ route('kondisi.destroy', $kondisi->id) }}" method="delete"
+                                primaryBtnClass="btn-danger" primaryBtnTitle="Delete">
+                                <div>
+                                    Apakah Anda yakin ingin menghapus Kondisi ini?
+                                    <p><strong>{{ $kondisi->kondisi }}</strong> - {{ $kondisi->kode }}</p>
+                                </div>
+                            </x-modal>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <x-modal id="createKondisiMeterModal" modalSize="modal-md" title="Tambah Kondisi Meter"
+        route="{{ route('kondisi.store') }}" method="POST" primaryBtnTitle="Simpan" secondaryBtnTitle="Batal">
+        <div class="mb-3">
+            <label for="kondisi" class="form-label">Kondisi</label>
+            <input type="text" class="form-control" id="kondisi" name="kondisi" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="keterangan" class="form-label">Keterangan</label>
+            <input type="text" class="form-control" id="keterangan" name="keterangan" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="kode" class="form-label">Kode</label>
+            <input type="text" class="form-control" id="kode" name="kode" required>
+        </div>
+    </x-modal>
 @endsection
 
 @push('script')

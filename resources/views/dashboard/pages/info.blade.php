@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col">
 
-            <h3>Informasi</h3>
+            <h3 class="fw-bolder">Informasi</h3>
         </div>
         <div class="col">
             <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addModal">Tambah</button>
@@ -22,6 +22,20 @@
             @if (session()->has('error'))
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session()->has('delete'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('delete') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session()->has('update'))
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ session('update') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -103,8 +117,8 @@
 
                             <!-- Modal Hapus Informasi -->
                             <x-modal id="deleteModal{{ $loop->iteration }}" title="Delete Info"
-                                route="{{ route('info.destroy', $info->id) }}" method="delete" primaryBtnClass="btn-danger"
-                                primaryBtnTitle="Delete">
+                                route="{{ route('info.destroy', $info->id) }}" method="delete"
+                                primaryBtnClass="btn-danger" primaryBtnTitle="Delete">
                                 <div>
                                     Apakah Anda yakin ingin menghapus informasi ini?
                                     <p><strong>{{ $info->jenis }}</strong> - {{ $info->waktu }}</p>

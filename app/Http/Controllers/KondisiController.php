@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KondisiMeter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class KondisiController extends Controller
 {
@@ -11,7 +13,8 @@ class KondisiController extends Controller
      */
     public function index()
     {
-        //
+        $kondisis = KondisiMeter::select(['id', 'kondisi', 'keterangan', 'kode'])->latest()->get();
+        return view('dashboard.pages.settings.kondisi')->with(compact('kondisis'));
     }
 
     /**
@@ -27,7 +30,25 @@ class KondisiController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'kondisi' => 'required|string|max:20',
+            'keterangan' => 'required|string|max:50',
+            'kode' => 'required|string|max:20',
+        ]);
+
+        try {
+            KondisiMeter::create([
+                'kondisi' => $request->kondisi,
+                'keterangan' => $request->keterangan,
+                'kode' => $request->kode,
+            ]);
+
+            return redirect()->back()->with('success', 'Data kondisi meter berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            Log::error('Gagal menyimpan kondisi meter: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+        }
     }
 
     /**
@@ -51,7 +72,26 @@ class KondisiController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'kondisi' => 'required|string|max:20',
+            'keterangan' => 'required|string|max:50',
+            'kode' => 'required|string|max:20',
+        ]);
+
+        try {
+            $kondisiMeter = KondisiMeter::findOrFail($id);
+
+            $kondisiMeter->update([
+                'kondisi' => $request->kondisi,
+                'keterangan' => $request->keterangan,
+                'kode' => $request->kode,
+            ]);
+
+            return redirect()->back()->with('update', 'Data kondisi meter berhasil diperbarui.');
+        } catch (\Exception $e) {
+            Log::error('Gagal memperbarui kondisi meter: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memperbarui data.');
+        }
     }
 
     /**
@@ -59,6 +99,14 @@ class KondisiController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $kondisiMeter = KondisiMeter::findOrFail($id);
+            $kondisiMeter->delete();
+
+            return redirect()->back()->with('delete', 'Data kondisi meter berhasil dihapus.');
+        } catch (\Exception $e) {
+            Log::error('Gagal menghapus kondisi meter: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data.');
+        }
     }
 }

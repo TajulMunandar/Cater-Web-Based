@@ -84,7 +84,7 @@ class InfoController extends Controller
             $info = Info::findOrFail($id);
             $info->update($request->all());
 
-            return redirect()->back()->with('success', 'Data berhasil diupdate');
+            return redirect()->back()->with('update', 'Data berhasil diupdate');
         } catch (\Exception $e) {
             Log::error("Error updating info ID $id: " . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal mempebarui data');
@@ -100,7 +100,7 @@ class InfoController extends Controller
             $info = Info::findOrFail($id);
             $info->delete();
 
-            return redirect()->back()->with('success', 'Data berhasil dihapus');
+            return redirect()->back()->with('delete', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             Log::error("Error deleting info ID $id: " . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal menghapus data');
