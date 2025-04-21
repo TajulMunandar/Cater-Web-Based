@@ -1,13 +1,15 @@
 <?php
 
+use App\Http\Controllers\InfoController;
+use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('dashboard.pages.index');
 });
-Route::get('/info', function () {
-    return view('dashboard.pages.info');
-});
+
+Route::resource('info', InfoController::class);
+
 
 route::prefix('/pelanggan')->group(function () {
     Route::get('/index', function () {
@@ -49,9 +51,10 @@ route::prefix('/rekap')->group(function () {
 });
 
 route::prefix('/settings')->group(function () {
-    Route::get('/index', function () {
-        return view('dashboard.pages.settings.wilayah');
-    });
+    Route::resource('/wilayah', WilayahController::class);
+
+    Route::get('/wilayahs/data', [WilayahController::class, 'data'])->name('wilayah.data');
+
     Route::get('/kondisi', function () {
         return view('dashboard.pages.settings.kondisi');
     });

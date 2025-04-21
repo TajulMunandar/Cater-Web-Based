@@ -20,16 +20,15 @@
             <!--  Header Start -->
             @include('dashboard.partials.navbar')
             <!--  Header End -->
-            <div class="container-fluid" data-aos="fade-up" data-aos-offset="300" data-aos-easing="ease-in-sine">
+            <div class="container-fluid">
                 @yield('content')
             </div>
         </div>
     </div>
+
     @include('dashboard.partials.script')
-    <script>
-        AOS.init();
-    </script>
     @stack('script')
+
 </body>
 
 </html>

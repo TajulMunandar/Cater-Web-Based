@@ -1,4 +1,4 @@
-<aside class="left-sidebar" data-aos="fade-right">
+<aside class="left-sidebar">
     <!-- Sidebar scroll-->
     <div>
         <div class="brand-logo d-flex align-items-center justify-content-between">
@@ -56,7 +56,7 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->is('settings*') ? 'active' : '' }}" href="/settings/index"
+                    <a class="sidebar-link {{ request()->is('settings*') ? 'active' : '' }}" href="/settings/wilayah"
                         aria-expanded="false">
                         <span>
                             <i class="ti ti-settings"></i>

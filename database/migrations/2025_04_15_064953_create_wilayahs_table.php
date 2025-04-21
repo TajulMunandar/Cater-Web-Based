@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('wilayahs', function (Blueprint $table) {
             $table->id();
             $table->string('wilayah', 30);
+            $table->string('kode', 20);
             $table->string('ket', 100);
             $table->string('cabang', 100);
             $table->string('center_lat', 100);

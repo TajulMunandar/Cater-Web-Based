@@ -1,4 +1,4 @@
-<header class="app-header" data-aos="fade-down">
+<header class="app-header" >
     <nav class="navbar navbar-expand-lg navbar-light">
         <ul class="navbar-nav">
             <li class="nav-item d-block d-xl-none">
@@ -27,8 +27,7 @@
                                 <i class="ti ti-user fs-6"></i>
                                 <p class="mb-0 fs-3">My Profile</p>
                             </a>
-                            <a href="./authentication-login.html"
-                                class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
+                            <a href="" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
                         </div>
                     </div>
                 </li>

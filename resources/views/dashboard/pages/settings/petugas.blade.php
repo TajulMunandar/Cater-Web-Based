@@ -15,7 +15,7 @@
         <div class="card p-3">
             <ul class="nav nav-pills ">
                 <li class="nav-item">
-                    <a class="nav-link " href="/settings/index">Wilayah</a>
+                    <a class="nav-link " href="/settings/wilayah">Wilayah</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/settings/kondisi">Kondisi</a>
