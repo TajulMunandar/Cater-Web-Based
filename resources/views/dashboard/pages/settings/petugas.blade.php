@@ -1,16 +1,6 @@
 @extends('dashboard.partials.main')
 
 @section('content')
-    <div class="row">
-        <div class="col">
-
-            <h3>Petugas</h3>
-        </div>
-        <div class="col">
-            <button class="btn btn-primary float-end" data-bs-toggle="modal"
-                data-bs-target="#createPetugasModal">Tambah</button>
-        </div>
-    </div>
     <div class="row mt-3">
         <div class="col">
             @if (session()->has('success'))
@@ -45,17 +35,26 @@
     <div class="row mt-2">
 
         <div class="card p-3">
-            <ul class="nav nav-pills ">
-                <li class="nav-item">
-                    <a class="nav-link " href="/settings/wilayah">Wilayah</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/settings/kondisi">Kondisi</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link  active" href="/settings/petugas">Petugas</a>
-                </li>
-            </ul>
+            <div class="row">
+                <div class="col">
+                    <ul class="nav nav-pills ">
+                        <li class="nav-item">
+                            <a class="nav-link " href="/settings/wilayah">Wilayah</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/settings/kondisi">Kondisi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link  active" href="/settings/petugas">Petugas</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col">
+                    <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#createPetugasModal"><i
+                            class="fas fa-plus me-2"></i> Tambah</button>
+
+                </div>
+            </div>
             <div class="card-body">
                 <table class="table" id="myTable">
                     <thead>
@@ -212,6 +211,10 @@
                         searchable: false
                     },
                 ],
+                columnDefs: [{
+                    targets: -1, // kolom terakhir (action)
+                    width: '120px' // atau sesuaikan lebih besar jika perlu
+                }],
                 "language": {
                     "search": "",
                     "searchPlaceholder": "Search...",
@@ -296,6 +299,54 @@
             inputCol.classList.remove('col-md-8');
             inputCol.classList.add('col-md-12');
         }
+
+        function previewPhoto1(event, id) {
+            const input = event.target;
+            const preview = document.getElementById('photoPreview1' + id);
+            const previewCol = document.getElementById('photoPreviewCol1' + id);
+            const inputCol = document.getElementById('photoInputCol1' + id);
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+
+                    previewCol.classList.remove('d-none');
+                    setTimeout(() => previewCol.classList.add('show'), 10);
+
+                    if (inputCol) {
+                        inputCol.classList.remove('col-md-12');
+                        inputCol.classList.add('col-md-8');
+                    }
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removePreview1(id) {
+            const preview = document.getElementById('photoPreview1' + id);
+            const previewCol = document.getElementById('photoPreviewCol1' + id);
+            const inputCol = document.getElementById('photoInputCol1' + id);
+            const fileInput = document.getElementById('photo1' + id);
+
+            // Hide preview with animation
+            previewCol.classList.remove('show');
+            setTimeout(() => previewCol.classList.add('d-none'), 500); // match transition
+
+            // Reset preview image
+            preview.src = '#';
+
+            // Reset file input
+            fileInput.value = "";
+
+            // Reset column width
+            if (inputCol) {
+                inputCol.classList.remove('col-md-8');
+                inputCol.classList.add('col-md-12');
+            }
+        }
     </script>
 @endpush
 
@@ -314,6 +365,19 @@
             max-height: 200px;
             /* atau sesuaikan tinggi kontennya */
             transition: opacity 0.5s ease, max-height 0.5s ease;
+        }
+
+        [id^="photoPreviewCol1"] {
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.5s ease, max-height 0.5s ease;
+        }
+
+        [id^="photoPreviewCol1"].show {
+            opacity: 1;
+            max-height: 200px;
+            /* Atur sesuai tinggi konten */
         }
     </style>
 @endpush

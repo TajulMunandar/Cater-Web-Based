@@ -14,9 +14,10 @@ class InfoController extends Controller
      */
     public function index()
     {
+        $page = 'Info';
         $petugas = Petugas::select('id', 'nama')->get();
         $infos = Info::with('petugas')->latest()->get();
-        return view('dashboard.pages.info', compact('infos', 'petugas'));
+        return view('dashboard.pages.info', compact('infos', 'petugas', 'page'));
     }
 
     /**

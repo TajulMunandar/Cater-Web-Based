@@ -15,7 +15,8 @@ class PetugasController extends Controller
      */
     public function index()
     {
-        return view('dashboard.pages.settings.petugas');
+        $page = 'Petugas';
+        return view('dashboard.pages.settings.petugas')->with(compact('page'));
     }
 
     public function data(Request $request)
@@ -30,70 +31,107 @@ class PetugasController extends Controller
                 return '<img src="' . $url . '" width="50" class="img-thumbnail" />';
             })
             ->addColumn('action', function ($row) {
-                $editBtn = '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal' . $row->id . '">Edit</button>';
-                $deleteBtn = '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal' . $row->id . '">Delete</button>';
+                $editBtn = '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal' . $row->id . '"><i
+                                            class="fas fa-pen-to-square"></i></button>';
+                $deleteBtn = '<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal' . $row->id . '"><i
+                                            class="fas fa-trash"></i></button>';
 
                 $editModal = '<div class="modal fade" id="editModal' . $row->id . '" tabindex="-1" aria-labelledby="editModalLabel' . $row->id . '" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <form action="' . route('petugas.update', $row->id) . '" method="POST" enctype="multipart/form-data">
-                            ' . csrf_field() . '
-                            ' . method_field('PUT') . '
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Petugas</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Nama</label>
-                                        <input type="text" name="nama" class="form-control" value="' . htmlspecialchars($row->nama) . '">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">NIP</label>
-                                        <input type="text" name="nip" class="form-control" value="' . htmlspecialchars($row->nip) . '">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">No HP 1</label>
-                                        <input type="text" name="no_hp1" class="form-control" value="' . htmlspecialchars($row->no_hp1) . '">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">No HP 2</label>
-                                        <input type="text" name="no_hp2" class="form-control" value="' . htmlspecialchars($row->no_hp2) . '">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Email</label>
-                                        <input type="email" name="email" class="form-control" value="' . htmlspecialchars($row->email) . '">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Username</label>
-                                        <input type="text" name="username" class="form-control" value="' . htmlspecialchars($row->username) . '">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Tipe Pekerjaan</label>
-                                        <input type="text" name="tipe_pekerjaan" class="form-control" value="' . htmlspecialchars($row->tipe_pekerjaan) . '">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Jenis Pekerjaan</label>
-                                        <input type="text" name="jenis_pekerjaan" class="form-control" value="' . htmlspecialchars($row->jenis_pekerjaan) . '">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Level</label>
-                                        <input type="number" name="level" class="form-control" value="' . htmlspecialchars($row->level) . '">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Photo (opsional)</label>
-                                        <input type="file" name="photo" class="form-control">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>';
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <form action="' . route('petugas.update', $row->id) . '" method="POST" enctype="multipart/form-data">
+                                                        ' . csrf_field() . '
+                                                        ' . method_field('PUT') . '
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Edit Petugas</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="row mb-3 align-items-center">
+                                                                <div class="col-md-12" id="photoInputCol1' . $row->id . '">
+                                                                    <div class="mb-3">
+                                                                        <label for="photo1' . $row->id . '" class="form-label">Foto (opsional)</label>
+                                                                        <input type="file" class="form-control" name="photo" id="photo1' . $row->id . '" accept="image/*"
+                                                                            onchange="previewPhoto1(event, ' . $row->id . ')">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4' . ($row->photo ? '' : ' d-none') . '" id="photoPreviewCol1' . $row->id . '">
+                                                                    <div class="mb-3 position-relative d-inline-block">
+                                                                        <img id="photoPreview1' . $row->id . '" src="' . asset('storage/pegawai/' . $row->photo) . '" alt="Preview Foto" class="img-thumbnail rounded-circle"
+                                                                            style="width: 150px; height: 150px; object-fit: cover; object-position: center;">
+                                                                        <button type="button"
+                                                                            class="btn btn-danger rounded-circle border border-dark position-absolute top-0 end-0 m-1 d-flex justify-content-center align-items-center"
+                                                                            style="width: 30px; height: 30px; font-size: 15px; line-height: 1; padding: 0;"
+                                                                            onclick="removePreview1(' . $row->id . ')">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label for="nama' . $row->id . '" class="form-label">Nama</label>
+                                                                        <input type="text" class="form-control" name="nama" value="' . htmlspecialchars($row->nama) . '">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="nip' . $row->id . '" class="form-label">NIP</label>
+                                                                        <input type="text" class="form-control" name="nip" value="' . htmlspecialchars($row->nip) . '">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="no_hp1' . $row->id . '" class="form-label">No HP 1</label>
+                                                                        <input type="text" class="form-control" name="no_hp1" value="' . htmlspecialchars($row->no_hp1) . '">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="no_hp2' . $row->id . '" class="form-label">No HP 2</label>
+                                                                        <input type="text" class="form-control" name="no_hp2" value="' . htmlspecialchars($row->no_hp2) . '">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="email' . $row->id . '" class="form-label">Email</label>
+                                                                        <input type="email" class="form-control" name="email" value="' . htmlspecialchars($row->email) . '">
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label for="username' . $row->id . '" class="form-label">Username</label>
+                                                                        <input type="text" class="form-control" name="username" value="' . htmlspecialchars($row->username) . '">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="tipe_pekerjaan' . $row->id . '" class="form-label">Tipe Pekerjaan</label>
+                                                                        <input type="text" class="form-control" name="tipe_pekerjaan" value="' . htmlspecialchars($row->tipe_pekerjaan) . '">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="jenis_pekerjaan' . $row->id . '" class="form-label">Jenis Pekerjaan</label>
+                                                                        <input type="text" class="form-control" name="jenis_pekerjaan" value="' . htmlspecialchars($row->jenis_pekerjaan) . '">
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="level' . $row->id . '" class="form-label">Level</label>
+                                                                        <select name="level" class="form-select" required>
+                                                                            <option value="">-- Pilih Level --</option>
+                                                                            <option value="0" ' . ($row->level == 0 ? 'selected' : '') . '>Admin</option>
+                                                                            <option value="1" ' . ($row->level == 1 ? 'selected' : '') . '>Petugas</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>';
+
 
                 $deleteModal = '<div class="modal fade" id="deleteModal' . $row->id . '" tabindex="-1" aria-labelledby="deleteModalLabel' . $row->id . '" aria-hidden="true">
                 <div class="modal-dialog">
@@ -136,21 +174,20 @@ class PetugasController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'nama' => 'required|string|max:50',
-            'nip' => 'required|string|max:30|unique:petugas,nip',
-            'no_hp1' => 'required|string|max:13',
-            'no_hp2' => 'nullable|string|max:13',
-            'email' => 'required|email|max:50|unique:petugas,email',
-            'username' => 'required|string|max:30|unique:petugas,username',
-            'password' => 'required|string|max:255',
-            'tipe_pekerjaan' => 'required|string|max:40',
-            'level' => 'required|integer|between:0,255',
-            'jenis_pekerjaan' => 'required|string|max:35',
-        ]);
-
         try {
+            $request->validate([
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'nama' => 'required|string|max:50',
+                'nip' => 'required|string|max:30|unique:petugas,nip',
+                'no_hp1' => 'required|string|max:13',
+                'no_hp2' => 'nullable|string|max:13',
+                'email' => 'required|email|max:50|unique:petugas,email',
+                'username' => 'required|string|max:30|unique:petugas,username',
+                'password' => 'required|string|max:255',
+                'tipe_pekerjaan' => 'required|string|max:40',
+                'level' => 'required|integer|between:0,255',
+                'jenis_pekerjaan' => 'required|string|max:35',
+            ]);
             $photoName = null;
 
             if ($request->hasFile('photo')) {
@@ -208,7 +245,64 @@ class PetugasController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
+        try {
+            $request->validate([
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'nama' => 'required|string|max:50',
+                'nip' => 'required|string|max:30|unique:petugas,nip,' . $id,
+                'no_hp1' => 'required|string|max:13',
+                'no_hp2' => 'nullable|string|max:13',
+                'email' => 'required|email|max:50|unique:petugas,email,' . $id,
+                'username' => 'required|string|max:30|unique:petugas,username,' . $id,
+                'tipe_pekerjaan' => 'required|string|max:40',
+                'level' => 'required|integer|between:0,255',
+                'jenis_pekerjaan' => 'required|string|max:35',
+            ]);
+            $petugas = Petugas::findOrFail($id);
+
+
+
+            $photoName = $petugas->photo; // default pakai foto lama
+
+            if ($request->hasFile('photo')) {
+                // Hapus foto lama jika ada
+                if ($photoName && Storage::exists('pegawai/' . $photoName)) {
+                    Storage::delete('pegawai/' . $photoName);
+                }
+
+                $file = $request->file('photo');
+                $extension = $file->getClientOriginalExtension();
+                $baseName = $request->username . '_001';
+                $photoName = $baseName . '.' . $extension;
+
+                // Hindari overwrite
+                if (Storage::exists('pegawai/' . $photoName)) {
+                    $photoName = $baseName . '_' . time() . '.' . $extension;
+                }
+
+                $file->storeAs('pegawai/', $photoName);
+            }
+
+
+
+            $petugas->update([
+                'photo' => $photoName,
+                'nama' => $request->nama,
+                'nip' => $request->nip,
+                'no_hp1' => $request->no_hp1,
+                'no_hp2' => $request->no_hp2,
+                'email' => $request->email,
+                'username' => $request->username,
+                'tipe_pekerjaan' => $request->tipe_pekerjaan,
+                'level' => $request->level,
+                'jenis_pekerjaan' => $request->jenis_pekerjaan,
+            ]);
+
+            return redirect()->back()->with('update', 'Data petugas berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     /**

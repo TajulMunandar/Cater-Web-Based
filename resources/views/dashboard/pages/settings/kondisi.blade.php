@@ -1,17 +1,6 @@
 @extends('dashboard.partials.main')
 
 @section('content')
-    <div class="row">
-        <div class="col">
-
-            <h3>Kondisi</h3>
-        </div>
-        <div class="col">
-            <button class="btn btn-primary float-end" data-bs-toggle="modal"
-                data-bs-target="#createKondisiMeterModal">Tambah</button>
-        </div>
-    </div>
-
     <div class="row mt-3">
         <div class="col">
             @if (session()->has('success'))
@@ -47,18 +36,28 @@
     <div class="row mt-2">
 
         <div class="card p-3">
-            <ul class="nav nav-pills ">
-                <li class="nav-item">
-                    <a class="nav-link " href="/settings/wilayah">Wilayah</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="/settings/kondisi">Kondisi</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="/settings/petugas">Petugas</a>
-                </li>
-            </ul>
-            <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <ul class="nav nav-pills ">
+                        <li class="nav-item">
+                            <a class="nav-link " href="/settings/wilayah">Wilayah</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/settings/kondisi">Kondisi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/settings/petugas">Petugas</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col">
+                    <button class="btn btn-primary float-end" data-bs-toggle="modal"
+                        data-bs-target="#createKondisiMeterModal"><i class="fas fa-plus me-2"></i> Tambah</button>
+                </div>
+            </div>
+
+            <div class="card-body ">
+
                 <table class="table" id="myTable">
                     <thead>
                         <tr>
@@ -84,9 +83,11 @@
                                 </td>
                                 <td>
                                     <button class="btn btn-warning" data-bs-toggle="modal"
-                                        data-bs-target="#editModal{{ $loop->iteration }}">Edit</button>
+                                        data-bs-target="#editModal{{ $loop->iteration }}"><i
+                                            class="fas fa-trash"></i></button>
                                     <button class="btn btn-danger" data-bs-toggle="modal"
-                                        data-bs-target="#deleteModal{{ $loop->iteration }}">Delete</button>
+                                        data-bs-target="#deleteModal{{ $loop->iteration }}"><i
+                                            class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
 

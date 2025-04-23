@@ -13,8 +13,9 @@ class KondisiController extends Controller
      */
     public function index()
     {
+        $page = 'Kondisi Meter';
         $kondisis = KondisiMeter::select(['id', 'kondisi', 'keterangan', 'kode'])->latest()->get();
-        return view('dashboard.pages.settings.kondisi')->with(compact('kondisis'));
+        return view('dashboard.pages.settings.kondisi')->with(compact('kondisis', 'page'));
     }
 
     /**
@@ -30,13 +31,14 @@ class KondisiController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'kondisi' => 'required|string|max:20',
-            'keterangan' => 'required|string|max:50',
-            'kode' => 'required|string|max:20',
-        ]);
+
 
         try {
+            $request->validate([
+                'kondisi' => 'required|string|max:20',
+                'keterangan' => 'required|string|max:50',
+                'kode' => 'required|string|max:20',
+            ]);
             KondisiMeter::create([
                 'kondisi' => $request->kondisi,
                 'keterangan' => $request->keterangan,
@@ -72,13 +74,12 @@ class KondisiController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
-            'kondisi' => 'required|string|max:20',
-            'keterangan' => 'required|string|max:50',
-            'kode' => 'required|string|max:20',
-        ]);
-
         try {
+            $request->validate([
+                'kondisi' => 'required|string|max:20',
+                'keterangan' => 'required|string|max:50',
+                'kode' => 'required|string|max:20',
+            ]);
             $kondisiMeter = KondisiMeter::findOrFail($id);
 
             $kondisiMeter->update([

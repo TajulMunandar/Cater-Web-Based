@@ -14,7 +14,8 @@ class WilayahController extends Controller
      */
     public function index()
     {
-        return view('dashboard.pages.settings.wilayah');
+        $page = 'Wilayah';
+        return view('dashboard.pages.settings.wilayah')->with(compact('page'));
     }
 
     public function data(Request $request)
@@ -25,8 +26,10 @@ class WilayahController extends Controller
         return DataTables::of($wilayahs)
             ->addIndexColumn()
             ->addColumn('action', function ($row) {
-                $editBtn = '<button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal' . $row->id . '">Edit</button>';
-                $deleteBtn = '<button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal' . $row->id . '">Delete</button>';
+                $editBtn = '<button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal' . $row->id . '"><i
+                                            class="fas fa-pen-to-square"></i></button>';
+                $deleteBtn = '<button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal' . $row->id . '"><i
+                                            class="fas fa-trash"></i></button>';
                 // Generate modal HTML
                 $editModal = '<div class="modal fade" id="editModal' . $row->id . '" tabindex="-1" aria-labelledby="editModalLabel' . $row->id . '" aria-hidden="true">
                 <div class="modal-dialog">

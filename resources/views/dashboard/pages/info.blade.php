@@ -1,15 +1,6 @@
 @extends('dashboard.partials.main')
 
 @section('content')
-    <div class="row">
-        <div class="col">
-
-            <h3 class="fw-bolder">Informasi</h3>
-        </div>
-        <div class="col">
-            <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addModal">Tambah</button>
-        </div>
-    </div>
     <div class="row mt-3">
         <div class="col">
             @if (session()->has('success'))
@@ -41,10 +32,17 @@
             @endif
         </div>
     </div>
-    <div class="row mt-2">
-
+    <div class="row mt-1">
         <div class="card p-3">
+            <div class="row">
+                <div class="col"></div>
+                <div class="col">
+                    <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addModal"><i
+                            class="fas fa-plus me-2"></i> Tambah</button>
+                </div>
+            </div>
             <div class="card-body">
+
                 <table class="table" id="myTable">
                     <thead>
                         <tr>
@@ -66,9 +64,11 @@
                                 <td>{{ $info->alamat }}</td>
                                 <td>
                                     <button class="btn btn-warning" data-bs-toggle="modal"
-                                        data-bs-target="#editModal{{ $loop->iteration }}">Edit</button>
+                                        data-bs-target="#editModal{{ $loop->iteration }}"><i
+                                            class="fas fa-pen-to-square"></i></button>
                                     <button class="btn btn-danger" data-bs-toggle="modal"
-                                        data-bs-target="#deleteModal{{ $loop->iteration }}">Delete</button>
+                                        data-bs-target="#deleteModal{{ $loop->iteration }}"><i
+                                            class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
 
