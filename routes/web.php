@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Controllers\DsmlPelangganController;
 use App\Http\Controllers\InfoController;
 use App\Http\Controllers\KondisiController;
+use App\Http\Controllers\PelangganBaruController;
+use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\PetaPelangganController;
 use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
@@ -14,18 +18,10 @@ Route::resource('info', InfoController::class);
 
 
 route::prefix('/pelanggan')->group(function () {
-    Route::get('/index', function () {
-        return view('dashboard.pages.pelanggan.pelanggan');
-    });
-    Route::get('/pelanggan-baru', function () {
-        return view('dashboard.pages.pelanggan.pelanggan-baru');
-    });
-    Route::get('/peta', function () {
-        return view('dashboard.pages.pelanggan.peta');
-    });
-    Route::get('/dsml', function () {
-        return view('dashboard.pages.pelanggan.dsml');
-    });
+    Route::resource('/', PelangganController::class);
+    Route::resource('/pelanggan-baru', PelangganBaruController::class);
+    Route::resource('/peta', PetaPelangganController::class);
+    Route::resource('/dsml', DsmlPelangganController::class);
 });
 
 route::prefix('/cater')->group(function () {

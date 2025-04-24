@@ -34,22 +34,25 @@
     </div>
     <div class="row mt-2">
 
-        <div class="card p-3">
+        <div class="card ">
             <div class="row">
                 <div class="col">
-                    <ul class="nav nav-pills ">
+                    <ul class="nav nav-pills user-profile-tab">
                         <li class="nav-item">
-                            <a class="nav-link active" href="/settings/wilayah">Wilayah</a>
+                            <a class="nav-link active position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
+                                href="/settings/wilayah"><i class="fas fa-map-location-dot me-2"></i>Wilayah</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/settings/kondisi">Kondisi</a>
+                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
+                                href="/settings/kondisi"><i class="fas fa-gauge me-2"></i>Kondisi</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link  " href="/settings/petugas">Petugas</a>
+                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
+                                href="/settings/petugas"><i class="fas fa-user-tie me-2"></i>Petugas</a>
                         </li>
                     </ul>
                 </div>
-                <div class="col">
+                <div class="col pt-3 pe-3">
                     <div class="col">
                         <button class="btn btn-primary float-end" data-bs-toggle="modal"
                             data-bs-target="#createWilayahModal"><i class="fas fa-plus me-2"></i>Tambah</button>

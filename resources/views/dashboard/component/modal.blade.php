@@ -4,8 +4,8 @@
     'title',
     'route' => '',
     'method' => 'POST',
-    'primaryBtnClass' => 'btn-primary',
-    'secondaryBtnClass' => 'btn-outline-secondary',
+    'primaryBtnClass' => 'btn-dark',
+    'secondaryBtnClass' => 'btn-light',
     'primaryBtnTitle' => 'Submit',
     'secondaryBtnTitle' => 'Cancel',
 ])
@@ -14,9 +14,10 @@
     <div class="modal-dialog {{ $modalSize }}" role="document">
         <form action="{{ $route }}" method="post" enctype="multipart/form-data" id="dynamicModalForm">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ $title }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-dark">
+                    <h5 class="modal-title text-white">{{ $title }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 @csrf
                 @method($method)

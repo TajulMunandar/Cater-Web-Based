@@ -50,7 +50,7 @@
                     <span class="hide-menu">Data Master</span>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->is('pelanggan*') ? 'active' : '' }}" href="/pelanggan/index"
+                    <a class="sidebar-link {{ request()->is('pelanggan*') ? 'active' : '' }}" href="/pelanggan"
                         aria-expanded="false">
                         <span>
                             <i class="ti ti-users"></i>

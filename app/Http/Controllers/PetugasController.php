@@ -42,9 +42,9 @@ class PetugasController extends Controller
                                                     <form action="' . route('petugas.update', $row->id) . '" method="POST" enctype="multipart/form-data">
                                                         ' . csrf_field() . '
                                                         ' . method_field('PUT') . '
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Edit Petugas</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        <div class="modal-header bg-dark">
+                                                            <h5 class="modal-title text-white">Edit Petugas</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                         </div>
                                                         <div class="modal-body">
                                                             <div class="row mb-3 align-items-center">
@@ -125,6 +125,7 @@ class PetugasController extends Controller
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">
+                                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                                                             <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
                                                         </div>
                                                     </form>
@@ -139,16 +140,16 @@ class PetugasController extends Controller
                         <form action="' . route('petugas.destroy', $row->id) . '" method="POST">
                             ' . csrf_field() . '
                             ' . method_field('DELETE') . '
-                            <div class="modal-header">
-                                <h5 class="modal-title">Hapus Petugas</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <div class="modal-header bg-dark ">
+                                <h5 class="modal-title text-white">Hapus Petugas</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
                                 Yakin ingin menghapus petugas <strong>' . htmlspecialchars($row->nama) . '</strong>?
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-danger">Hapus</button>
                             </div>
                         </form>
                     </div>

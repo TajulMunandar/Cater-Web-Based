@@ -33,10 +33,10 @@
         </div>
     </div>
     <div class="row mt-1">
-        <div class="card p-3">
+        <div class="card">
             <div class="row">
                 <div class="col"></div>
-                <div class="col">
+                <div class="col pt-3 pe-3">
                     <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addModal"><i
                             class="fas fa-plus me-2"></i> Tambah</button>
                 </div>
@@ -74,8 +74,8 @@
 
                             <!-- Modal Edit Informasi -->
                             <x-modal id="editModal{{ $loop->iteration }}" title="Edit Info"
-                                route="{{ route('info.update', $info->id) }}" method="PUT" primaryBtnTitle="Save Changes"
-                                primaryBtnClass="btn-warning">
+                                route="{{ route('info.update', $info->id) }}" method="PUT"
+                                primaryBtnTitle="Simpan Perubahan" secondaryBtnTitle="Batal" primaryBtnClass="btn-warning">
                                 <div class="mb-3">
                                     <label for="petugas_id_{{ $loop->iteration }}" class="form-label">Petugas</label>
                                     <select name="id_petugas" id="petugas_id_{{ $loop->iteration }}" class="form-select"
@@ -118,7 +118,7 @@
                             <!-- Modal Hapus Informasi -->
                             <x-modal id="deleteModal{{ $loop->iteration }}" title="Delete Info"
                                 route="{{ route('info.destroy', $info->id) }}" method="delete"
-                                primaryBtnClass="btn-danger" primaryBtnTitle="Delete">
+                                primaryBtnClass="btn-danger" primaryBtnTitle="Hapus" secondaryBtnTitle="Batal">
                                 <div>
                                     Apakah Anda yakin ingin menghapus informasi ini?
                                     <p><strong>{{ $info->jenis }}</strong> - {{ $info->waktu }}</p>
@@ -132,7 +132,8 @@
     </div>
 
     <!-- Modal Tambah Informasi -->
-    <x-modal id="addModal" title="Tambah Info" route="{{ route('info.store') }}" method="POST">
+    <x-modal id="addModal" title="Tambah Info" route="{{ route('info.store') }}" method="POST"
+        primaryBtnTitle="Simpan" secondaryBtnTitle="Batal">
         <div class="mb-3">
             <label for="petugas_id" class="form-label">Petugas</label>
             <select name="id_petugas" id="petugas_id" class="form-select" required>

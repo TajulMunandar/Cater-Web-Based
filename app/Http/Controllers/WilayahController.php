@@ -37,9 +37,9 @@ class WilayahController extends Controller
                         <form action="' . route('wilayah.update', $row->id) . '" method="POST">
                             ' . csrf_field() . '
                             ' . method_field('PUT') . '
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editModalLabel' . $row->id . '">Edit Wilayah</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <div class="modal-header bg-dark">
+                                <h5 class="modal-title text-white" id="editModalLabel' . $row->id . '">Edit Wilayah</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="mb-3">
@@ -68,8 +68,8 @@ class WilayahController extends Controller
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-warning">Save changes</button>
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
                             </div>
                         </form>
                     </div>
@@ -84,16 +84,16 @@ class WilayahController extends Controller
                             <form action="' . $deleteUrl . '" method="POST">
                                 ' . csrf_field() . '
                                 ' . method_field('DELETE') . '
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteModalLabel' . $row->id . '">Delete Wilayah</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <div class="modal-header bg-dark">
+                                    <h5 class="modal-title text-white" id="deleteModalLabel' . $row->id . '">Delete Wilayah</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
                                     Are you sure you want to delete wilayah <strong>' . $row->wilayah . '</strong>?
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-danger">Hapus</button>
                                 </div>
                             </form>
                         </div>
