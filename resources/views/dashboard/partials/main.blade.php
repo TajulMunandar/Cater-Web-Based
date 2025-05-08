@@ -22,9 +22,7 @@
                 data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
     </div>
-    <div class="preloader">
-        <img src="{{ asset('assets/images/logos/logo.png') }}" alt="loader" class="lds-ripple img-fluid" />
-    </div>
+    @include('dashboard.partials.preloader')
     <!--  Body Wrapper -->
     <div id="main-wrapper">
         <!-- Sidebar Start -->

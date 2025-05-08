@@ -30,51 +30,28 @@
             </div>
 
             <div class="card-body">
-                <table class="table" id="myTable">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Nama</th>
-                            <th>Alamat</th>
-                            <th>Telepon</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>John Doe</td>
-                            <td>Jl. Raya</td>
-                            <td>08123456789</td>
-                            <td>
-                                <button class="btn btn-warning">Edit</button>
-                                <button class="btn btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div id="map" style="height: 400px; width: 100%;"></div>
             </div>
         </div>
     </div>
 @endsection
 
-@push('script')
-    <script>
-        var isMobile = window.innerWidth <= 768;
-        $(document).ready(function() {
-            $('#myTable').DataTable({
-                "language": {
-                    "search": "",
-                    "searchPlaceholder": "Search...",
-                    "decimal": ",",
-                    "thousands": ".",
-                },
-                "scrollX": isMobile,
-            });
 
-            $('.dataTables_filter input[type="search"]').css({
-                "marginBottom": "10px"
-            });
-        });
+@push('head')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+@endpush
+
+@push('script')
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([5.164880647711926, 97.10991371831535], 13); // Jakarta
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+        }).addTo(map);
+
+        L.marker([5.164880647711926, 97.10991371831535]).addTo(map)
+            .bindPopup('Lokasi Saya')
+            .openPopup();
     </script>
 @endpush
