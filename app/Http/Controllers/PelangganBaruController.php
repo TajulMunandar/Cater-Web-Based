@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KondisiMeter;
+use App\Models\Pelanggan;
+use App\Models\Petugas;
 use Illuminate\Http\Request;
 
 class PelangganBaruController extends Controller
@@ -20,7 +23,10 @@ class PelangganBaruController extends Controller
      */
     public function create()
     {
-        //
+        $petugases = Petugas::all();
+        $kondisis = KondisiMeter::all();
+        $page = 'Tambah Pelanggan';
+        return view('dashboard.pages.data-pelanggan.create')->with(compact('page', 'petugases', 'kondisis'));
     }
 
     /**
@@ -42,9 +48,10 @@ class PelangganBaruController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Pelanggan $pelanggan)
     {
-        //
+        $page = 'Edit Pelanggan';
+        return view('dashboard.pages.data-pelanggan.edit')->with(compact('page', 'pelanggan'));
     }
 
     /**

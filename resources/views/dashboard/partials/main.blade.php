@@ -32,7 +32,7 @@
             <!--  Header Start -->
             @include('dashboard.partials.navbar')
             <!--  Header End -->
-            @include('dashboard.partials.sidebar2')
+            {{-- @include('dashboard.partials.sidebar2') --}}
             <div class="body-wrapper">
                 <!--  Main wrapper -->
                 <div class="container-fluid">
@@ -48,6 +48,7 @@
     <div class="dark-transparent sidebartoggler"></div>
 
     @include('dashboard.partials.script')
+
     @stack('script')
 
 </body>

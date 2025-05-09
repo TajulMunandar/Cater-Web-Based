@@ -2,11 +2,9 @@
 
 @section('content')
     <div class="row mt-2">
-
         <div class="card">
             <div class="row">
                 <div class="col col-lg-10">
-
                     <ul class="nav nav-pills user-profile-tab">
                         <li class="nav-item" role="presentation">
                             <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
@@ -27,7 +25,8 @@
                     </ul>
                 </div>
                 <div class="col pt-3 pe-3">
-                    <button class="btn btn-primary float-end"><i class="fas fa-plus me-2"></i>Tambah</button>
+                    <a href="{{ route('pelanggan-baru.create') }}" class="btn btn-primary float-end"><i
+                            class="fas fa-plus me-2"></i>Tambah</a>
                 </div>
             </div>
 

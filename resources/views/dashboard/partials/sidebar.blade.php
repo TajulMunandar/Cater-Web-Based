@@ -3,9 +3,8 @@
     <div>
         <div class="brand-logo d-flex align-items-center justify-content-between">
             <a href="/" class="text-nowrap logo-img">
-                <img src="{{ asset('assets/images/logos/logo.png') }}" class="dark-logo" alt="Logo-Dark" width="50%">
-                <img src="{{ asset('assets/images/logos/logo.png') }}" class="light-logo" alt="Logo-light"
-                    width="50%" />
+                <img src="{{ asset('assets/images/logo.png') }}" class="dark-logo" alt="Logo-Dark" width="230px">
+                <img src="{{ asset('assets/images/logo.png') }}" class="light-logo" alt="Logo-light" width="230px" />
             </a>
             <a href="javascript:void(0)" class="sidebartoggler ms-auto text-decoration-none fs-5 d-block d-xl-none">
                 <i class="ti ti-x"></i>
