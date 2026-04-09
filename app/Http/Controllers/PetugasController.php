@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Petugas;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -21,11 +22,17 @@ class PetugasController extends Controller
 
     public function data(Request $request)
     {
-        $petugas = Petugas::select(['id', 'photo', 'nama', 'nip', 'no_hp1', 'no_hp2', 'email', 'username', 'tipe_pekerjaan', 'level', 'jenis_pekerjaan'])
+        $petugas = Petugas::with('user')->select(['id', 'photo', 'nama', 'nip', 'no_hp1', 'no_hp2', 'user_id', 'tipe_pekerjaan', 'level', 'jenis_pekerjaan'])
             ->latest();
 
         return DataTables::of($petugas)
             ->addIndexColumn()
+            ->addColumn('email', function ($row) {
+                return $row->user ? $row->user->email : '';
+            })
+            ->addColumn('username', function ($row) {
+                return $row->user ? $row->user->name : '';
+            })
             ->addColumn('photo', function ($row) {
                 $url = $row->photo ? asset('storage/pegawai/' . $row->photo) : asset('noimage.png');
                 return '<img src="' . $url . '" width="50" class="img-thumbnail" />';
@@ -93,14 +100,14 @@ class PetugasController extends Controller
 
                                                                     <div class="mb-3">
                                                                         <label for="email' . $row->id . '" class="form-label">Email</label>
-                                                                        <input type="email" class="form-control" name="email" value="' . htmlspecialchars($row->email) . '">
+                                                                        <input type="email" class="form-control" name="email" value="' . htmlspecialchars($row->user ? $row->user->email : '') . '">
                                                                     </div>
                                                                 </div>
 
                                                                 <div class="col-md-6">
                                                                     <div class="mb-3">
                                                                         <label for="username' . $row->id . '" class="form-label">Username</label>
-                                                                        <input type="text" class="form-control" name="username" value="' . htmlspecialchars($row->username) . '">
+                                                                        <input type="text" class="form-control" name="username" value="' . htmlspecialchars($row->user ? $row->user->name : '') . '">
                                                                     </div>
 
                                                                     <div class="mb-3">
@@ -182,14 +189,21 @@ class PetugasController extends Controller
                 'nip' => 'required|string|max:30|unique:petugas,nip',
                 'no_hp1' => 'required|string|max:13',
                 'no_hp2' => 'nullable|string|max:13',
-                'email' => 'required|email|max:50|unique:petugas,email',
-                'username' => 'required|string|max:30|unique:petugas,username',
+                'email' => 'required|email|max:50|unique:users,email',
+                'username' => 'required|string|max:30',
                 'password' => 'required|string|max:255',
                 'tipe_pekerjaan' => 'required|string|max:40',
                 'level' => 'required|integer|between:0,255',
                 'jenis_pekerjaan' => 'required|string|max:35',
             ]);
             $photoName = null;
+
+            // Create user
+            $user = User::create([
+                'name' => $request->nama,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
             if ($request->hasFile('photo')) {
                 $file = $request->file('photo');
@@ -206,14 +220,12 @@ class PetugasController extends Controller
             }
 
             Petugas::create([
+                'user_id' => $user->id,
                 'photo' => $photoName,
                 'nama' => $request->nama,
                 'nip' => $request->nip,
                 'no_hp1' => $request->no_hp1,
                 'no_hp2' => $request->no_hp2,
-                'email' => $request->email,
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
                 'tipe_pekerjaan' => $request->tipe_pekerjaan,
                 'level' => $request->level,
                 'jenis_pekerjaan' => $request->jenis_pekerjaan,
@@ -246,6 +258,7 @@ class PetugasController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $petugas = Petugas::findOrFail($id);
 
         try {
             $request->validate([
@@ -254,13 +267,12 @@ class PetugasController extends Controller
                 'nip' => 'required|string|max:30|unique:petugas,nip,' . $id,
                 'no_hp1' => 'required|string|max:13',
                 'no_hp2' => 'nullable|string|max:13',
-                'email' => 'required|email|max:50|unique:petugas,email,' . $id,
-                'username' => 'required|string|max:30|unique:petugas,username,' . $id,
+                'email' => 'required|email|max:50|unique:users,email,' . $petugas->user_id,
+                'username' => 'required|string|max:30',
                 'tipe_pekerjaan' => 'required|string|max:40',
                 'level' => 'required|integer|between:0,255',
                 'jenis_pekerjaan' => 'required|string|max:35',
             ]);
-            $petugas = Petugas::findOrFail($id);
 
 
 
@@ -287,14 +299,18 @@ class PetugasController extends Controller
 
 
 
+            // Update user
+            $petugas->user->update([
+                'name' => $request->nama,
+                'email' => $request->email,
+            ]);
+
             $petugas->update([
                 'photo' => $photoName,
                 'nama' => $request->nama,
                 'nip' => $request->nip,
                 'no_hp1' => $request->no_hp1,
                 'no_hp2' => $request->no_hp2,
-                'email' => $request->email,
-                'username' => $request->username,
                 'tipe_pekerjaan' => $request->tipe_pekerjaan,
                 'level' => $request->level,
                 'jenis_pekerjaan' => $request->jenis_pekerjaan,
@@ -314,6 +330,11 @@ class PetugasController extends Controller
         try {
             // Cari data petugas berdasarkan ID
             $petugas = Petugas::findOrFail($id);
+
+            // Hapus user terkait
+            if ($petugas->user) {
+                $petugas->user->delete();
+            }
 
             // Hapus data petugas
             $petugas->delete();

@@ -33,4 +33,9 @@ class Petugas extends Model
     {
         return $this->hasMany(info::class, 'id_petugas', 'id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

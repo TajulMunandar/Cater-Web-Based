@@ -27,7 +27,7 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->is('cater*') ? 'active' : '' }}" href="/cater/index"
+                    <a class="sidebar-link {{ request()->is('cater*') ? 'active' : '' }}" href="{{ route('cater.index') }}"
                         aria-expanded="false">
                         <span>
                             <i class="ti ti-target"></i>

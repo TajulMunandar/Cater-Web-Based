@@ -15,7 +15,7 @@
         <div class="card p-3">
             <ul class="nav nav-pills ">
                 <li class="nav-item">
-                    <a class="nav-link" href="/cater/index">Catat Meter</a>
+                    <a class="nav-link" href="{{ route('cater.index') }}">Catat Meter</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/cater/tidak-terdaftar">Catat Meter Tidak Terdaftar</a>

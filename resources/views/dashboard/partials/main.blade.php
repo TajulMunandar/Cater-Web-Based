@@ -35,12 +35,13 @@
             {{-- @include('dashboard.partials.sidebar2') --}}
             <div class="body-wrapper">
                 <!--  Main wrapper -->
-                <div class="container-fluid">
+                
+                <div class="px-5">
                     @include('dashboard.partials.banner')
-                    <div class="px-3">
                         @yield('content')
                     </div>
-                </div>
+                
+
             </div>
         </div>
     </div>

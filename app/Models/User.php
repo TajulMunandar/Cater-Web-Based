@@ -43,4 +43,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function petugas()
+    {
+        return $this->hasOne(Petugas::class);
+    }
 }
