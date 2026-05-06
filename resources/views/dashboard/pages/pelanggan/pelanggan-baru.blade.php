@@ -12,7 +12,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
-                                href="/pelanggan/pelanggan-baru"><i class="fas fa-user me-2"></i>Data Pelanggan Baru</a>
+                                href="/pelanggan/baru"><i class="fas fa-user me-2"></i>Data Pelanggan Baru</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
@@ -25,7 +25,7 @@
                     </ul>
                 </div>
                 <div class="col pt-3 pe-3">
-                    <a href="{{ route('pelanggan-baru.create') }}" class="btn btn-primary float-end"><i
+                    <a href="{{ route('pelanggan.baru.create') }}" class="btn btn-primary float-end"><i
                             class="fas fa-plus me-2"></i>Tambah</a>
                 </div>
             </div>

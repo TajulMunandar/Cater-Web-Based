@@ -2,31 +2,31 @@
 
 @section('content')
     <div class="row mt-2">
-
         <div class="card">
             <div class="row">
                 <div class="col col-lg-10">
                     <ul class="nav nav-pills user-profile-tab">
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
-                                href="/pelanggan"><i class="fas fa-users me-2"></i> Data Pelanggan</a>
+                            <a class="nav-link active position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
+                                href="/pelanggan"><i class="fas fa-users me-2"></i>Data Pelanggan</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
-                                href="/pelanggan/baru"> <i class="fas fa-user me-2"></i> Data Pelanggan Baru</a>
+                                href="/pelanggan/baru"><i class="fas fa-user me-2"></i>Data Pelanggan Baru</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
                                 href="/pelanggan/peta"><i class="fas fa-map me-2"></i>Peta Pelanggan</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
-                                aria-current="page" href="/pelanggan/dsml"> <i class="fas fa-list me-2"></i> DSML</a>
+                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
+                                aria-current="page" href="/pelanggan/dsml"><i class="fas fa-list me-2"></i>DSML</a>
                         </li>
                     </ul>
                 </div>
                 <div class="col pt-3 pe-3">
-                    <button class="btn btn-primary float-end"><i class="fas fa-plus me-2"></i>Tambah</button>
+                    <a href="{{ route('pelanggan.baru.create') }}" class="btn btn-primary float-end"><i
+                            class="fas fa-plus me-2"></i>Tambah</a>
                 </div>
             </div>
 
@@ -35,13 +35,12 @@
                     <thead>
                         <tr>
                             <th>No</th>
+                            <th>Photo Rumah</th>
                             <th>Nama</th>
                             <th>Alamat</th>
                             <th>No Sambung</th>
                             <th>No Kontrol</th>
-                            <th>Type</th>
-                            <th>Wilayah</th>
-                            <th>Nilai</th>
+                            <th>Golongan</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -49,9 +48,8 @@
                         <tr>
                             <td>1</td>
                             <td>John Doe</td>
+                            <td>John Doe</td>
                             <td>Jl. Raya</td>
-                            <td>08123456789</td>
-                            <td>08123456789</td>
                             <td>08123456789</td>
                             <td>08123456789</td>
                             <td>08123456789</td>

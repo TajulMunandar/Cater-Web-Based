@@ -37,4 +37,14 @@ class Pelanggan extends Model
     {
         return $this->hasMany(FotoPelanggan::class, 'id_pelanggan', 'id');
     }
+
+    public function wilayah()
+    {
+        return $this->belongsTo(Wilayah::class, 'id_wilayah');
+    }
+
+    public function golongan()
+    {
+        return $this->belongsTo(Golongan::class, 'id_gol');
+    }
 }

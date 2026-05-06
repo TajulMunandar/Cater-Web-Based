@@ -13,13 +13,17 @@ return new class extends Migration
     {
         Schema::create('pelanggans', function (Blueprint $table) {
             $table->id();
-            $table->string('no_sambung', 30)->unique();
+            $table->foreignId('id_wilayah')->nullable()->constrained('wilayahs')->onDelete('set null');
+            $table->foreignId('id_gol')->nullable()->constrained('golongans')->onDelete('set null');
+            $table->string('no_sambu', 30)->unique();
             $table->string('no_kontrol', 50)->unique();
-            $table->string('nama', 50);
-            $table->string('alamat', 100);
-            $table->string('telepon', 13);
-            $table->string('type', 50);
-            $table->enum('status', ['aktif', 'non-aktif']);
+            $table->string('nama', 100);
+            $table->text('alamat');
+            $table->string('telepon', 20)->nullable();
+            $table->string('type', 50)->nullable();
+            $table->enum('status', ['aktif', 'non-aktif'])->default('aktif');
+            $table->decimal('lat', 10, 8)->nullable();
+            $table->decimal('long', 11, 8)->nullable();
             $table->timestamps();
         });
     }

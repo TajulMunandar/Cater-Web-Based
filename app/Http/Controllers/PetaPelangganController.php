@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pelanggan;
 use Illuminate\Http\Request;
 
 class PetaPelangganController extends Controller
@@ -12,54 +13,26 @@ class PetaPelangganController extends Controller
     public function index()
     {
         $page = 'Peta Pelanggan';
-        return view('dashboard.pages.pelanggan.peta')->with(compact('page'));
+        
+        $pelanggans = Pelanggan::whereNotNull('lat')
+            ->whereNotNull('long')
+            ->where('status', 'aktif')
+            ->get();
+            
+        return view('dashboard.pages.pelanggan.peta', compact('page', 'pelanggans'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Get data for map (JSON API)
      */
-    public function create()
+    public function data()
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $pelanggans = Pelanggan::whereNotNull('lat')
+            ->whereNotNull('long')
+            ->where('status', 'aktif')
+            ->with(['wilayah', 'golongan'])
+            ->get();
+            
+        return response()->json($pelanggans);
     }
 }

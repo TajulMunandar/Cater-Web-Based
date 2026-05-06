@@ -36,6 +36,24 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->is('cater/tidak-terdaftar*') ? 'active' : '' }}" href="{{ route('cater.tidak-terdaftar') }}"
+                        aria-expanded="false">
+                        <span>
+                            <i class="ti ti-alert-circle"></i>
+                        </span>
+                        <span class="hide-menu">Catat Meter Tidak Terdaftar</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->is('cater/urutan*') ? 'active' : '' }}" href="{{ route('cater.urutan') }}"
+                        aria-expanded="false">
+                        <span>
+                            <i class="ti ti-list-numbers"></i>
+                        </span>
+                        <span class="hide-menu">Urutan Catat Meter</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->is('rekap*') ? 'active' : '' }}" href="/rekap/index"
                         aria-expanded="false">
                         <span>
@@ -58,19 +76,50 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->is('settings*') ? 'active' : '' }}" href="/settings/wilayah"
+                    <a class="sidebar-link {{ request()->is('settings/wilayah*') ? 'active' : '' }}" href="/settings/wilayah"
                         aria-expanded="false">
                         <span>
-                            <i class="ti ti-settings"></i>
+                            <i class="ti ti-map"></i>
                         </span>
-                        <span class="hide-menu">Setting</span>
+                        <span class="hide-menu">Wilayah</span>
                     </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->is('settings/golongan*') ? 'active' : '' }}" href="/settings/golongan"
+                        aria-expanded="false">
+                        <span>
+                            <i class="ti ti-tag"></i>
+                        </span>
+                        <span class="hide-menu">Golongan</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->is('settings/kondisi*') ? 'active' : '' }}" href="/settings/kondisi"
+                        aria-expanded="false">
+                        <span>
+                            <i class="ti ti-gauge"></i>
+                        </span>
+                        <span class="hide-menu">Kondisi</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->is('settings/petugas*') ? 'active' : '' }}" href="/settings/petugas"
+                        aria-expanded="false">
+                        <span>
+                            <i class="ti ti-user"></i>
+                        </span>
+                        <span class="hide-menu">Petugas</span>
+                    </a>
+                </li>
+                <li class="nav-small-cap">
+                    <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
+                    <span class="hide-menu">Lainnya</span>
                 </li>
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->is('info') ? 'active' : '' }}" href="/info"
                         aria-expanded="false">
                         <span>
-                            <i class="ti ti-help"></i>
+                            <i class="ti ti-info-circle"></i>
                         </span>
                         <span class="hide-menu">Info</span>
                     </a>

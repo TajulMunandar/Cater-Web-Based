@@ -34,8 +34,8 @@ class PetugasController extends Controller
                 return $row->user ? $row->user->name : '';
             })
             ->addColumn('photo', function ($row) {
-                $url = $row->photo ? asset('storage/pegawai/' . $row->photo) : asset('noimage.png');
-                return '<img src="' . $url . '" width="50" class="img-thumbnail" />';
+                $url = $row->photo ? asset('storage/pegawai/' . $row->photo) : asset('assets/images/profile/user-1.jpg');
+                return '<img src="' . $url . '" width="50" class="img-thumbnail" style="cursor:pointer" onclick="showPhotoModal(\'' . $url . '\', \'' . htmlspecialchars($row->nama) . '\')" />';
             })
             ->addColumn('action', function ($row) {
                 $editBtn = '<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal' . $row->id . '"><i

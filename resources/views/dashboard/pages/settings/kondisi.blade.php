@@ -51,6 +51,10 @@
                             <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
                                 href="/settings/petugas"><i class="fas fa-user-tie me-2"></i>Petugas</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
+                                href="/settings/golongan"><i class="fas fa-tags me-2"></i>Golongan</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="col pt-3 pe-3">

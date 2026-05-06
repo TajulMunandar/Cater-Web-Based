@@ -50,6 +50,10 @@
                             <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
                                 href="/settings/petugas"><i class="fas fa-user-tie me-2"></i>Petugas</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
+                                href="/settings/golongan"><i class="fas fa-tags me-2"></i>Golongan</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="col pt-3 pe-3">
@@ -102,20 +106,61 @@
 
         <div class="mb-3">
             <label for="center_lat" class="form-label">Center Latitude</label>
-            <input type="text" class="form-control" id="center_lat" name="center_lat" required>
+            <input type="text" class="form-control" id="center_lat" name="center_lat" readonly required>
+            <small class="text-muted">Klik pada peta untuk menentukan lokasi</small>
         </div>
 
         <div class="mb-3">
             <label for="center_long" class="form-label">Center Longitude</label>
-            <input type="text" class="form-control" id="center_long" name="center_long" required>
+            <input type="text" class="form-control" id="center_long" name="center_long" readonly required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Peta</label>
+            <div id="mapCreate" style="height: 300px; width: 100%; border: 1px solid #ddd;"></div>
         </div>
     </x-modal>
 @endsection
 
+@push('head')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+@endpush
+
 @push('script')
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
+        var mapCreate;
         var isMobile = window.innerWidth <= 768;
-        $(document).ready(function() {
+        
+        function initMap() {
+            // Initialize map when modal is shown
+            $('#createWilayahModal').on('shown.bs.modal', function() {
+                if (!mapCreate) {
+                    mapCreate = L.map('mapCreate').setView([5.164880647711926, 97.10991371831535], 13);
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors',
+                        maxZoom: 19,
+                    }).addTo(mapCreate);
+                    
+                    var marker;
+                    
+                    mapCreate.on('click', function(e) {
+                        if (marker) {
+                            mapCreate.removeLayer(marker);
+                        }
+                        marker = L.marker(e.latlng).addTo(mapCreate);
+                        document.getElementById('center_lat').value = e.latlng.lat.toFixed(6);
+                        document.getElementById('center_long').value = e.latlng.lng.toFixed(6);
+                    });
+                }
+                setTimeout(function() {
+                    mapCreate.invalidateSize();
+                }, 100);
+            });
+        }
+        
+        function initDataTable() {
             $('#myTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -134,7 +179,6 @@
                         data: 'kode',
                         name: 'kode'
                     },
-
                     {
                         data: 'cabang',
                         name: 'cabang'
@@ -164,14 +208,43 @@
                 $.get(`/settings/wilayah/${id}/modal-edit`, function(html) {
                     $('#dynamicModalContainer').html(html);
 
-                    // Tunggu DOM update, lalu inisialisasi modal
                     setTimeout(() => {
                         let modalEl = document.getElementById('editModal' + id);
                         if (modalEl) {
                             let modal = new bootstrap.Modal(modalEl);
                             modal.show();
+                            
+                            modalEl.addEventListener('shown.bs.modal', function() {
+                                var mapDiv = document.getElementById('mapEdit' + id);
+                                if (mapDiv && !mapDiv._leaflet_id) {
+                                    var lat = parseFloat(mapDiv.dataset.lat) || 5.164880647711926;
+                                    var lng = parseFloat(mapDiv.dataset.lng) || 97.10991371831535;
+                                    
+                                    var mapEdit = L.map('mapEdit' + id).setView([lat, lng], 13);
+                                    
+                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                        attribution: '© OpenStreetMap contributors',
+                                        maxZoom: 19,
+                                    }).addTo(mapEdit);
+                                    
+                                    var marker = L.marker([lat, lng]).addTo(mapEdit);
+                                    
+                                    mapEdit.on('click', function(e) {
+                                        if (marker) {
+                                            mapEdit.removeLayer(marker);
+                                        }
+                                        marker = L.marker(e.latlng).addTo(mapEdit);
+                                        document.getElementById('center_lat' + id).value = e.latlng.lat.toFixed(6);
+                                        document.getElementById('center_long' + id).value = e.latlng.lng.toFixed(6);
+                                    });
+                                    
+                                    setTimeout(function() {
+                                        mapEdit.invalidateSize();
+                                    }, 100);
+                                }
+                            });
                         }
-                    }, 10); // Tunggu sedikit untuk memastikan modal sudah ter-render
+                    }, 10);
                 });
             });
 
@@ -186,10 +259,14 @@
                             let modal = new bootstrap.Modal(modalEl);
                             modal.show();
                         }
-                    }, 10); // Tunggu sedikit untuk memastikan modal sudah ter-render
+                    }, 10);
                 });
             });
-
+        }
+        
+        $(document).ready(function() {
+            initMap();
+            initDataTable();
         });
     </script>
 @endpush

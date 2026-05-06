@@ -1,66 +1,106 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Cater - Aplikasi Catat Meter Air
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web berbasis Laravel untuk pengelolaan catat meter air, data pelanggan, dan pelaporan.
 
-## About Laravel
+## Fitur
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 1. Dashboard
+Halaman utama yang menampilkan overview sistem dengan statistik dan ringkasan data.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 2. Catat Meter
+Fitur untuk mencatat pembacaan meter air pelanggan.
+- **Catat Meter**: Input data pembacaan meter (pelanggan, petugas, kondisi, stand meter, GPS, status)
+- **Catat Meter Tidak Terdaftar**: Pencatatan untuk pelanggan yang belum terdaftar
+- **Urutan Catat Meter**: Pengurutan pekerjaan catat meter
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 3. Data Rekap
+Menampilkan laporan dan rekap data.
+- **Rekap Catat Meter**: Laporan data pembacaan meter dengan DataTables server-side
+- **Rekap Wilayah**: Laporan berdasarkan wilayah
+- **Rekap Kondisi**: Laporan berdasarkan kondisi meter
 
-## Learning Laravel
+### 4. Pelanggan
+Pengelolaan data pelanggan lengkap.
+- **Data Pelanggan**: Daftar lengkap pelanggan dengan CRUD penuh (nama, alamat, no sambu, no kontrol, wilayah, golongan, status, koordinat GPS)
+- **Data Pelanggan Baru**: Input pelanggan baru
+- **Peta Pelanggan**: Visualisasi lokasi pelanggan di peta interaktif (Leaflet/OpenStreetMap) dengan popup detail
+- **DSML**: Daftar Susunan Meter Listrik
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 5. Settings (Data Master)
+Konfigurasi data master dengan validasi lengkap.
+- **Wilayah**: Pengelolaan data wilayah (nama, kode, cabang, koordinat center)
+- **Golongan**: Pengelolaan tarif dan biaya admin per kategori pelanggan
+- **Kondisi**: Pengelolaan kondisi meter (kondisi, kode, keterangan)
+- **Petugas**: Pengelolaan data petugas dengan integrasi User (nama, NIP, no HP, email, username, level, foto)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 6. Info
+Pengelolaan informasi dan berita terkait layanan dengan full CRUD.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 7. Autentikasi & Autorisasi
+Sistem login/register dengan role-based access control (RBAC):
+- **Admin** (level=0): Akses penuh ke semua fitur
+- **Petugas** (level=1): Akses terbatas sesuai tugas
 
-## Laravel Sponsors
+## Teknologi
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Laravel 10+ (Framework)
+- Bootstrap 5 (UI)
+- DataTables dengan server-side processing
+- Leaflet.js (Peta)
+- Yajra DataTables
+- Middleware untuk role-based access
 
-### Premium Partners
+## Instalasi
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```bash
+# Clone project
+composer install
 
-## Contributing
+# Setup environment
+cp .env.example .env
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Generate key
+php artisan key:generate
 
-## Code of Conduct
+# Jalankan migration
+php artisan migrate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Seed database (termasuk user admin/petugas, wilayah, kondisi, golongan)
+php artisan db:seed
 
-## Security Vulnerabilities
+# Jalankan server
+php artisan serve
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Akun Default Setelah Seeding:
+- **Admin**: admin@example.com / password (level=0)
+- **Petugas**: petugas@example.com / password (level=1)
 
-## License
+## Struktur Database
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Tabel Utama:
+- `users` - User untuk login (ada field `level` untuk role)
+- `petugas` - Data petugas (relasi ke users)
+- `pelanggans` - Data pelanggan (relasi ke wilayah, golongans)
+- `golongans` - Golongan/tarif pelanggan
+- `wilayahs` - Data wilayah
+- `kondisi_meters` - Kondisi meter
+- `catat_meters` - Data catat meter
+
+### Relasi:
+- Pelanggan belongsTo Wilayah, Golongan
+- Petugas belongsTo User
+- CatatMeter belongsTo Pelanggan, Petugas, KondisiMeter
+
+## Best Practices yang Diterapkan
+
+1. **Validasi**: Semua form menggunakan validation rules di Controller
+2. **Error Handling**: Try-catch dengan logging ke file dan user feedback
+3. **Security**: XSS protection dengan htmlspecialchars, CSRF protection
+4. **Code Organization**: Logic di controller dirapikan, modal di-generate via PHP
+5. **DataTables**: Server-side processing untuk performa optimal
+6. **Middleware**: CheckRole untuk authorization berbasis level
+
+## Lisensi
+
+MIT

@@ -50,6 +50,10 @@
                             <a class="nav-link active position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
                                 href="/settings/petugas"><i class="fas fa-user-tie me-2"></i>Petugas</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
+                                href="/settings/golongan"><i class="fas fa-tags me-2"></i>Golongan</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="col pt-3 pe-3">
@@ -167,6 +171,20 @@
             </div>
         </div>
     </x-modal>
+
+    <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark">
+                    <h5 class="modal-title text-white" id="previewNamaPetugas"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="previewPhotoModal" src="" alt="Foto Petugas" class="img-fluid" style="max-height: 400px; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('script')
@@ -349,6 +367,13 @@
                 inputCol.classList.remove('col-md-8');
                 inputCol.classList.add('col-md-12');
             }
+        }
+
+        function showPhotoModal(url, nama) {
+            document.getElementById('previewPhotoModal').src = url;
+            document.getElementById('previewNamaPetugas').textContent = nama;
+            var myModal = new bootstrap.Modal(document.getElementById('photoModal'));
+            myModal.show();
         }
     </script>
 @endpush

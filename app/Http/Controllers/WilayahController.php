@@ -60,11 +60,15 @@ class WilayahController extends Controller
                                 </div>
                                 <div class="mb-3">
                                     <label for="center_lat' . $row->id . '" class="form-label">Center Latitude</label>
-                                    <input type="text" class="form-control" id="center_lat' . $row->id . '" name="center_lat" value="' . htmlspecialchars($row->center_lat) . '">
+                                    <input type="text" class="form-control center_lat_input" id="center_lat' . $row->id . '" name="center_lat" value="' . htmlspecialchars($row->center_lat) . '" readonly>
                                 </div>
                                 <div class="mb-3">
                                     <label for="center_long' . $row->id . '" class="form-label">Center Longitude</label>
-                                    <input type="text" class="form-control" id="center_long' . $row->id . '" name="center_long" value="' . htmlspecialchars($row->center_long) . '">
+                                    <input type="text" class="form-control center_long_input" id="center_long' . $row->id . '" name="center_long" value="' . htmlspecialchars($row->center_long) . '" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Peta</label>
+                                    <div id="mapEdit' . $row->id . '" class="map-edit" style="height: 250px; width: 100%; border: 1px solid #ddd;" data-lat="' . htmlspecialchars($row->center_lat) . '" data-lng="' . htmlspecialchars($row->center_long) . '"></div>
                                 </div>
                             </div>
                             <div class="modal-footer">
