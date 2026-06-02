@@ -2,27 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CatatMeter;
+use App\Models\Pelanggan;
+use App\Models\Petugas;
+use App\Models\Wilayah;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('auth');
     }
 
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
     public function index()
     {
-        return view('home');
+        $user = auth()->user();
+        $userName = $user->petugas?->nama ?? ucfirst($user->name ?? 'Admin');
+
+        $stats = [
+            'total_pelanggan' => Pelanggan::count(),
+            'catat_hari_ini' => CatatMeter::whereDate('waktu', today())->count(),
+            'total_wilayah' => Wilayah::count(),
+            'total_petugas' => Petugas::count(),
+        ];
+
+        return view('home', compact('userName', 'stats'));
     }
 }

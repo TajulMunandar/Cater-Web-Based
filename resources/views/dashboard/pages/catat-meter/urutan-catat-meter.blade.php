@@ -1,27 +1,21 @@
 @extends('dashboard.partials.main')
 
+@section('title', 'Urutan Catat Meter')
+
 @section('content')
-    <div class="row">
-        <div class="col">
+@include('dashboard.partials.page-header', ['title' => 'Urutan Catat Meter', 'subtitle' => 'Urutan pencatatan meter pelanggan', 'icon' => 'sort-ascending'])
 
-            <h3>Urutan Catat Meter</h3>
-        </div>
-        <div class="col">
-            <button class="btn btn-primary float-end">Tambah</button>
-        </div>
-    </div>
     <div class="row mt-2">
-
         <div class="card p-3">
             <ul class="nav nav-pills ">
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('cater.index') }}">Catat Meter</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/cater/tidak-terdaftar">Catat Meter Tidak Terdaftar</a>
+                    <a class="nav-link" href="{{ route('cater.tidak-terdaftar') }}">Catat Meter Tidak Terdaftar</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="/cater/urutan">Urutan Catat Meter</a>
+                    <a class="nav-link active" href="{{ route('cater.urutan') }}">Urutan Catat Meter</a>
                 </li>
             </ul>
             <div class="card-body">
@@ -31,26 +25,12 @@
                             <th>No</th>
                             <th>Nama</th>
                             <th>No Sambung</th>
-                            <th>NO Kontrol</th>
+                            <th>No Kontrol</th>
                             <th>Alamat</th>
                             <th>Wilayah</th>
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>John Doe</td>
-                            <td>Jl. Raya</td>
-                            <td>08123456789</td>
-                            <td>08123456789</td>
-                            <td>08123456789</td>
-                            <td>
-                                <button class="btn btn-warning">Edit</button>
-                                <button class="btn btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
                 </table>
             </div>
         </div>
@@ -59,16 +39,27 @@
 
 @push('script')
     <script>
-        var isMobile = window.innerWidth <= 768;
         $(document).ready(function() {
             $('#myTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route("cater.data-urutan") }}',
+                columns: [
+                    { data: 'DT_RowIndex', orderable: false, searchable: false },
+                    { data: 'nama' },
+                    { data: 'no_sambu' },
+                    { data: 'no_kontrol' },
+                    { data: 'alamat' },
+                    { data: 'wilayah' },
+                    { data: 'action', orderable: false, searchable: false }
+                ],
                 "language": {
                     "search": "",
                     "searchPlaceholder": "Search...",
                     "decimal": ",",
                     "thousands": ".",
                 },
-                "scrollX": isMobile,
+                "scrollX": true,
             });
 
             $('.dataTables_filter input[type="search"]').css({

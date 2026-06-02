@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pelanggan;
+use App\Models\Wilayah;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PetaPelangganController extends Controller
 {
@@ -12,27 +15,38 @@ class PetaPelangganController extends Controller
      */
     public function index()
     {
-        $page = 'Peta Pelanggan';
-        
-        $pelanggans = Pelanggan::whereNotNull('lat')
-            ->whereNotNull('long')
-            ->where('status', 'aktif')
-            ->get();
-            
-        return view('dashboard.pages.pelanggan.peta', compact('page', 'pelanggans'));
+        try {
+            $page = 'Peta Pelanggan';
+
+            $wilayahs = Wilayah::all();
+
+            return view('dashboard.pages.pelanggan.peta', compact('page', 'wilayahs'));
+        } catch (Exception $e) {
+            Log::error('Error in PetaPelangganController index: ' . $e->getMessage());
+            abort(500, 'Internal server error');
+        }
     }
 
     /**
      * Get data for map (JSON API)
      */
-    public function data()
+    public function data(Request $request)
     {
-        $pelanggans = Pelanggan::whereNotNull('lat')
-            ->whereNotNull('long')
-            ->where('status', 'aktif')
-            ->with(['wilayah', 'golongan'])
-            ->get();
-            
-        return response()->json($pelanggans);
+        try {
+            $query = Pelanggan::whereNotNull('lat')
+                ->whereNotNull('long')
+                ->with(['wilayah', 'golongan']);
+
+            if ($request->has('wilayah') && $request->wilayah) {
+                $query->where('id_wilayah', $request->wilayah);
+            }
+
+            $pelanggans = $query->get();
+
+            return response()->json($pelanggans);
+        } catch (Exception $e) {
+            Log::error('Error fetching pelanggan data: ' . $e->getMessage());
+            return response()->json(['error' => 'Internal server error'], 500);
+        }
     }
 }

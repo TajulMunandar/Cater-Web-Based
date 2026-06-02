@@ -5,12 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $kondisi
+ * @property string $keterangan
+ * @property string $kode
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
 class KondisiMeter extends Model
 {
     /** @use HasFactory<\Database\Factories\KondisiMeterFactory> */
     use HasFactory;
-    protected $guarded = [
-        'id',
+
+    protected $fillable = [
+        'kondisi',
+        'keterangan',
+        'kode',
     ];
 
     public function CatatMeter()

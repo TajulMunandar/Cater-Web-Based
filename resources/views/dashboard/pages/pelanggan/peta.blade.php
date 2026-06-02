@@ -1,7 +1,10 @@
 @extends('dashboard.partials.main')
 
+@section('title', 'Peta Pelanggan')
+
 @section('content')
-    <div class="row mt-2">
+@include('dashboard.partials.page-header', ['title' => 'Peta Pelanggan', 'subtitle' => 'Visualisasi lokasi pelanggan di peta', 'icon' => 'map-pins'])
+    <div class="row">
         <div class="card">
             <div class="row">
                 <div class="col col-lg-10">
@@ -27,6 +30,15 @@
             </div>
 
             <div class="card-body">
+                <div class="mb-3">
+                    <label for="wilayahFilter" class="form-label">Filter berdasarkan Wilayah</label>
+                    <select id="wilayahFilter" class="form-select">
+                        <option value="">Semua Wilayah</option>
+                        @foreach($wilayahs as $wilayah)
+                            <option value="{{ $wilayah->id }}">{{ $wilayah->wilayah }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div id="map" style="height: 500px; width: 100%;"></div>
             </div>
         </div>
@@ -42,14 +54,20 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map;
-        
-        // Default center (can be overridden by wilayah)
+        var markers = []; // Array to store markers
+
+        // Default center
         var defaultCenter = [5.164880647711926, 97.10991371831535];
         var defaultZoom = 13;
 
         $(document).ready(function() {
             initMap();
             loadPelangganMarkers();
+
+            // Handle wilayah filter change
+            $('#wilayahFilter').change(function() {
+                loadPelangganMarkers();
+            });
         });
 
         function initMap() {
@@ -62,9 +80,29 @@
         }
 
         function loadPelangganMarkers() {
-            fetch('/pelanggan/peta/data')
-                .then(response => response.json())
+            var wilayahId = $('#wilayahFilter').val();
+            var url = '{{ route("pelanggan.data-peta") }}';
+            if (wilayahId) {
+                url += '?wilayah=' + wilayahId;
+            }
+
+            console.log('Fetching data from:', url);
+
+            // Clear existing markers
+            markers.forEach(function(marker) {
+                map.removeLayer(marker);
+            });
+            markers = [];
+
+            fetch(url)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Data received:', data);
+                    console.log('Number of pelanggan:', data.length);
+
                     if (data.length > 0) {
                         // Create custom icon
                         var customIcon = L.icon({
@@ -77,51 +115,61 @@
                             shadowSize: [41, 41]
                         });
 
-                        data.forEach(function(pelanggan) {
+                        data.forEach(function(pelanggan, index) {
+                            console.log('Pelanggan', index, ':', pelanggan.nama, 'lat:', pelanggan.lat, 'long:', pelanggan.long);
                             if (pelanggan.lat && pelanggan.long) {
-                                var marker = L.marker([pelanggan.lat, pelanggan.long], {icon: customIcon})
-                                    .addTo(map);
-                                
-                                var popupContent = `
-                                    <div style="min-width: 200px;">
-                                        <h6>${pelanggan.nama}</h6>
-                                        <p><strong>No. Sambu:</strong> ${pelanggan.no_sambu || '-'}</p>
-                                        <p><strong>No. Kontrol:</strong> ${pelanggan.no_kontrol || '-'}</p>
-                                        <p><strong>Alamat:</strong> ${pelanggan.alamat || '-'}</p>
-                                        <p><strong>Telepon:</strong> ${pelanggan.telepon || '-'}</p>
-                                        <p><strong>Golongan:</strong> ${pelanggan.golongan ? pelanggan.golongan.nama : '-'}</p>
-                                        <p><strong>Wilayah:</strong> ${pelanggan.wilayah ? pelanggan.wilayah.wilayah : '-'}</p>
-                                        <a href="/pelanggan/${pelanggan.id}" class="btn btn-sm btn-primary">Lihat Detail</a>
-                                    </div>
-                                `;
-                                
-                                marker.bindPopup(popupContent);
+                                var lat = parseFloat(pelanggan.lat);
+                                var lng = parseFloat(pelanggan.long);
+
+                                if (!isNaN(lat) && !isNaN(lng)) {
+                                    var marker = L.marker([lat, lng], {icon: customIcon})
+                                        .addTo(map);
+
+                                    markers.push(marker); // Store marker
+
+                                    var popupContent = `
+                                        <div style="min-width: 200px;">
+                                            <h6>${pelanggan.nama}</h6>
+                                            <p><strong>No. Sambu:</strong> ${pelanggan.no_sambu || '-'}</p>
+                                            <p><strong>No. Kontrol:</strong> ${pelanggan.no_kontrol || '-'}</p>
+                                            <p><strong>Alamat:</strong> ${pelanggan.alamat || '-'}</p>
+                                            <p><strong>Telepon:</strong> ${pelanggan.telepon || '-'}</p>
+                                            <p><strong>Golongan:</strong> ${pelanggan.golongan ? pelanggan.golongan.nama : '-'}</p>
+                                            <p><strong>Wilayah:</strong> ${pelanggan.wilayah ? pelanggan.wilayah.wilayah : '-'}</p>
+                                            <p><strong>Status:</strong> ${pelanggan.status}</p>
+                                            <a href="/pelanggan/${pelanggan.id}" class="btn btn-sm btn-primary">Lihat Detail</a>
+                                        </div>
+                                    `;
+
+                                    marker.bindPopup(popupContent);
+                                } else {
+                                    console.warn('Invalid coordinates for pelanggan:', pelanggan.nama);
+                                }
+                            } else {
+                                console.warn('Missing lat/long for pelanggan:', pelanggan.nama);
                             }
                         });
 
-                        // Fit bounds to all markers
-                        var group = L.featureGroup(data.map(function(p) {
-                            return L.marker([p.lat, p.long]);
-                        }));
-                        map.fitBounds(group.getBounds().pad(0.1));
+                        // Fit bounds to all markers if any
+                        if (markers.length > 0) {
+                            var group = L.featureGroup(markers);
+                            map.fitBounds(group.getBounds().pad(0.1));
+                            console.log('Fitted bounds for', markers.length, 'markers');
+                        } else {
+                            console.warn('No valid markers to display');
+                        }
+                    } else {
+                        // If no data, reset to default view
+                        map.setView(defaultCenter, defaultZoom);
+                        console.log('No data, reset to default view');
                     }
                 })
-                .catch(error => console.error('Error loading pelanggan:', error));
+                .catch(error => {
+                    console.error('Error loading pelanggan:', error);
+                    alert('Error loading map data: ' + error.message);
+                });
         }
     </script>
 @endpush
 
-@push('script')
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([5.164880647711926, 97.10991371831535], 13); // Jakarta
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
-        }).addTo(map);
-
-        L.marker([5.164880647711926, 97.10991371831535]).addTo(map)
-            .bindPopup('Lokasi Saya')
-            .openPopup();
-    </script>
-@endpush

@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             GolonganSeeder::class,
             WilayahSeeder::class,
             KondisiMeterSeeder::class,
+            PelangganSeeder::class,
+            PelangganDetailSeeder::class,
         ]);
 
         User::factory()->create([

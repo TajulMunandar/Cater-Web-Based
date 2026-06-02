@@ -24,6 +24,9 @@ return new class extends Migration
         DB::statement("UPDATE petugas SET user_id = (SELECT id FROM users WHERE users.email = petugas.email)");
 
         Schema::table('petugas', function (Blueprint $table) {
+            // Drop unique indexes first (required for SQLite compatibility)
+            $table->dropUnique(['email']);
+            $table->dropUnique(['username']);
             // Drop redundant columns
             $table->dropColumn(['email', 'password', 'username']);
         });
@@ -36,9 +39,9 @@ return new class extends Migration
     {
         Schema::table('petugas', function (Blueprint $table) {
             // Add back the columns
-            $table->string('email', 50)->unique();
-            $table->string('password', 255);
-            $table->string('username', 30)->unique();
+            $table->string('email', 50)->nullable()->unique();
+            $table->string('password', 255)->nullable();
+            $table->string('username', 30)->nullable()->unique();
         });
 
         // Update petugas with data from users

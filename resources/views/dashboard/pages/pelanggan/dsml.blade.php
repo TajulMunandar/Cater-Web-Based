@@ -1,7 +1,10 @@
 @extends('dashboard.partials.main')
 
+@section('title', 'DSML')
+
 @section('content')
-    <div class="row mt-2">
+@include('dashboard.partials.page-header', ['title' => 'DSML', 'subtitle' => 'Data catat meter pelanggan', 'icon' => 'list'])
+    <div class="row">
 
         <div class="card">
             <div class="row">

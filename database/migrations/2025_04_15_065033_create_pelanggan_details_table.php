@@ -19,11 +19,8 @@ return new class extends Migration
             $table->foreignId('id_kondisi')->constrained('kondisi_meters')->onDelete('restrict')->onUpdate('cascade');
             $table->dateTime('waktu_catat_meter');
             $table->integer('stand_terakhir');
-            $table->string('gps', 25);
             $table->string('ket', 100);
-            $table->string('hari', 10);
             $table->integer('urutan');
-            $table->foreignId('id_wilayah')->constrained('wilayahs')->onDelete('restrict')->onUpdate('cascade');
             $table->timestamps();
         });
     }

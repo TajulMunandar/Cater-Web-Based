@@ -1,100 +1,47 @@
-<header class="topbar">
-    <div class="with-vertical"><!-- ---------------------------------- -->
-        <!-- Start Vertical Layout Header -->
-        <!-- ---------------------------------- -->
-        <nav class="navbar navbar-expand-lg p-0">
-            <ul class="navbar-nav">
-                <li class="nav-item nav-icon-hover-bg rounded-circle ms-n2">
-                    <a class="nav-link sidebartoggler" id="headerCollapse" href="javascript:void(0)">
-                        <i class="ti ti-menu-2"></i>
+<header class="navbar-modern" style="height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:1020;">
+    <div class="d-flex align-items-center gap-3">
+        <a href="javascript:void(0)" class="sidebartoggler d-flex align-items-center justify-content-center text-decoration-none"
+           style="width:36px;height:36px;border-radius:var(--radius-sm);color:var(--color-text-secondary);transition:var(--transition);"
+           onmouseover="this.style.background='var(--color-border-light)'" onmouseout="this.style.background='transparent'">
+            <i class="ti ti-menu-2 sidebar-hamburger" style="font-size:1.25rem;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease;"></i>
+        </a>
+
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{{ route('pelanggan.baru.index') }}" class="d-flex align-items-center justify-content-center position-relative text-decoration-none"
+           style="width:38px;height:38px;border-radius:50%;color:var(--color-text-secondary);transition:var(--transition);"
+           onmouseover="this.style.background='var(--color-border-light)'" onmouseout="this.style.background='transparent'">
+            <i class="ti ti-bell" style="font-size:1.2rem;"></i>
+            @if(isset($stats) && ($stats['pelanggan_baru_bulan_ini'] ?? 0) > 0)
+                <span class="position-absolute" style="top:4px;right:4px;width:8px;height:8px;background:var(--color-danger);border-radius:50%;border:2px solid #fff;"></span>
+            @endif
+        </a>
+        <div class="dropdown">
+            <a href="javascript:void(0)" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+               style="padding:0.25rem 0.5rem;border-radius:100px;transition:var(--transition);"
+               onmouseover="this.style.background='var(--color-border-light)'" onmouseout="this.style.background='transparent'">
+                <div class="d-flex align-items-center justify-content-center rounded-circle" style="width:32px;height:32px;background:var(--color-primary);color:#fff;font-size:0.75rem;font-weight:600;">
+                    {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                </div>
+                <span class="d-none d-md-inline fw-medium" style="font-size:0.85rem;color:var(--color-text);">{{ Auth::user()->name ?? 'Admin' }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg py-2" style="border-radius:var(--radius-md);min-width:200px;">
+                <li>
+                    <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-3" href="#" style="font-size:0.85rem;border-radius:var(--radius-sm);">
+                        <i class="ti ti-user" style="font-size:1rem;color:var(--color-text-muted);"></i>
+                        Profile
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-3" href="{{ route('logout') }}"
+                       style="font-size:0.85rem;border-radius:var(--radius-sm);color:var(--color-danger);"
+                       onclick="event.preventDefault();document.getElementById('logout-form-nav').submit();">
+                        <i class="ti ti-logout" style="font-size:1rem;"></i>
+                        Logout
                     </a>
                 </li>
             </ul>
-            <div class="d-block d-lg-none py-4">
-                <a href="../main/index.html" class="text-nowrap logo-img">
-                    <img src="{{ asset('assets/images/logos/dark-logo.svg') }}" class="dark-logo" alt="Logo-Dark" />
-                    <img src="{{ asset('assets/images/logos/light-logo.svg') }}" class="light-logo" alt="Logo-light" />
-                </a>
-            </div>
-            <a class="navbar-toggler nav-icon-hover-bg rounded-circle p-0 mx-0 border-0" href="javascript:void(0)"
-                data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <i class="ti ti-dots fs-7"></i>
-            </a>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <div class="d-flex align-items-center justify-content-between">
-
-                    <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-center">
-                        <!-- ------------------------------- -->
-                        <!-- start language Dropdown -->
-                        <!-- ------------------------------- -->
-                        <li class="nav-item nav-icon-hover-bg rounded-circle">
-                            <a class="nav-link moon dark-layout" href="javascript:void(0)">
-                                <i class="ti ti-moon moon"></i>
-                            </a>
-                            <a class="nav-link sun light-layout" href="javascript:void(0)">
-                                <i class="ti ti-sun sun"></i>
-                            </a>
-                        </li>
-                        <!-- ------------------------------- -->
-                        <!-- start profile Dropdown -->
-                        <!-- ------------------------------- -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link pe-0" href="javascript:void(0)" id="drop1" aria-expanded="false">
-                                <div class="d-flex align-items-center">
-                                    <div class="user-profile-img">
-                                        <img src="{{ asset('assets/images/profile/user-1.jpg') }}"
-                                            class="rounded-circle" width="35" height="35" alt="modernize-img" />
-                                    </div>
-                                </div>
-                            </a>
-                            <div class="dropdown-menu content-dd dropdown-menu-end dropdown-menu-animate-up"
-                                aria-labelledby="drop1">
-                                <div class="profile-dropdown position-relative" data-simplebar>
-                                    <div class="py-3 px-7 pb-0">
-                                        <h5 class="mb-0 fs-5 fw-semibold">User Profile</h5>
-                                    </div>
-                                    <div class="d-flex align-items-center py-9 mx-7 border-bottom">
-                                        <img src="{{ asset('assets/images/profile/user-1.jpg') }}"
-                                            class="rounded-circle" width="80" height="80" alt="modernize-img" />
-                                        <div class="ms-3">
-                                            <h5 class="mb-1 fs-3">Mathew Anderson</h5>
-                                            <span class="mb-1 d-block">Designer</span>
-                                            <p class="mb-0 d-flex align-items-center gap-2">
-                                                <i class="ti ti-mail fs-4"></i> info@modernize.com
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="message-body">
-                                        <a href="{{ asset('main/page-user-profile.html ') }}"
-                                            class="py-8 px-7 mt-8 d-flex align-items-center">
-                                            <span
-                                                class="d-flex align-items-center justify-content-center text-bg-light rounded-1 p-6">
-                                                <img src="{{ asset('assets/images/svgs/icon-account.svg') }}"
-                                                    alt="modernize-img" width="24" height="24" />
-                                            </span>
-                                            <div class="w-100 ps-3">
-                                                <h6 class="mb-1 fs-3 fw-semibold lh-base">My Profile</h6>
-                                                <span class="fs-2 d-block text-body-secondary">Account Settings</span>
-                                            </div>
-                                        </a>
-                                    </div>
-                                    <div class="d-grid py-4 px-7 pt-8">
-                                        <a href="../main/authentication-login.html" class="btn btn-outline-primary">Log
-                                            Out</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <!-- ------------------------------- -->
-                        <!-- end profile Dropdown -->
-                        <!-- ------------------------------- -->
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        <!-- ---------------------------------- -->
-        <!-- End Vertical Layout Header -->
-        <!-- ---------------------------------- -->
+        </div>
     </div>
 </header>

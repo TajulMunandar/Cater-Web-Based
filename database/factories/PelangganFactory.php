@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Pelanggan;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,12 @@ class PelangganFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'no_sambu' => fake()->unique()->regexify('[A-Z]{2}-[0-9]{4}'),
+            'no_kontrol' => fake()->unique()->regexify('[A-Z]{2}-[0-9]{4}'),
+            'nama' => fake()->name(),
+            'alamat' => fake()->address(),
+            'telepon' => fake()->phoneNumber(),
+            'status' => Pelanggan::STATUS_AKTIF,
         ];
     }
 }

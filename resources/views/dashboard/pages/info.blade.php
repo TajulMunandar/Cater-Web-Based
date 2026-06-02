@@ -1,7 +1,10 @@
 @extends('dashboard.partials.main')
 
+@section('title', 'Info')
+
 @section('content')
-    <div class="row mt-3">
+@include('dashboard.partials.page-header', ['title' => 'Info', 'subtitle' => 'Informasi dan konfigurasi sistem', 'icon' => 'info-circle'])
+    <div class="row">
         <div class="col">
             @if (session()->has('success'))
                 <div class="alert alert-primary alert-dismissible fade show" role="alert">

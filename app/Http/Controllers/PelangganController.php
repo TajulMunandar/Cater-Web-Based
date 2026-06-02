@@ -7,6 +7,8 @@ use App\Models\Wilayah;
 use App\Models\Golongan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class PelangganController extends Controller
@@ -17,7 +19,9 @@ class PelangganController extends Controller
     public function index(Request $request)
     {
         $page = 'Pelanggan';
-        
+
+        session(['back_to_pelanggan' => route('pelanggan.index')]);
+
         if ($request->ajax()) {
             return $this->data($request);
         }
@@ -30,128 +34,76 @@ class PelangganController extends Controller
      */
     public function data(Request $request)
     {
-        $pelanggans = Pelanggan::with(['wilayah', 'golongan'])
-            ->select(['id', 'no_sambung', 'no_kontrol', 'nama', 'alamat', 'telepon', 'type', 'status', 'id_wilayah', 'id_gol']);
-        
-        return DataTables::of($pelanggans)
-            ->addIndexColumn()
-            ->addColumn('wilayah', function ($row) {
-                return $row->wilayah ? $row->wilayah->wilayah : '-';
-            })
-            ->addColumn('golongan', function ($row) {
-                return $row->golongan ? $row->golongan->nama : '-';
-            })
+        try {
+            $pelanggans = Pelanggan::with(['wilayah', 'golongan', 'FotoPelanggan'])
+                ->select(['id', 'no_sambu', 'no_kontrol', 'nama', 'alamat', 'telepon', 'type', 'status', 'id_wilayah', 'id_gol']);
+
+            return DataTables::of($pelanggans)
+                ->addIndexColumn()
+                ->addColumn('wilayah', function ($row) {
+                    return $row->wilayah ? $row->wilayah->wilayah : '-';
+                })
+                ->addColumn('golongan', function ($row) {
+                    return $row->golongan ? $row->golongan->nama : '-';
+                })
             ->addColumn('status_badge', function ($row) {
-                return $row->status == 'aktif' 
-                    ? '<span class="badge bg-success">Aktif</span>' 
+                return $row->status == Pelanggan::STATUS_AKTIF
+                    ? '<span class="badge bg-success">Aktif</span>'
                     : '<span class="badge bg-danger">Non-Aktif</span>';
             })
-            ->addColumn('action', function ($row) {
-                $editBtn = '<button class="btn btn-warning btn-sm btn-edit" data-id="' . $row->id . '"><i class="fas fa-pen-to-square"></i></button>';
-                $deleteBtn = '<button class="btn btn-danger btn-sm btn-delete" data-id="' . $row->id . '"><i class="fas fa-trash"></i></button>';
-
-                // Edit Modal
-                $editModal = '
-                <div class="modal fade" id="editModal' . $row->id . '" tabindex="-1" aria-labelledby="editModalLabel' . $row->id . '" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <form action="' . route('pelanggan.update', $row->id) . '" method="POST">
-                                ' . csrf_field() . '
-                                ' . method_field('PUT') . '
-                                <div class="modal-header bg-dark">
-                                    <h5 class="modal-title text-white">Edit Pelanggan</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">No Sambu</label>
-                                                <input type="text" class="form-control" name="no_sambu" value="' . htmlspecialchars($row->no_sambu) . '" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">No Kontrol</label>
-                                                <input type="text" class="form-control" name="no_kontrol" value="' . htmlspecialchars($row->no_kontrol) . '" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Nama</label>
-                                                <input type="text" class="form-control" name="nama" value="' . htmlspecialchars($row->nama) . '" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Telepon</label>
-                                                <input type="text" class="form-control" name="telepon" value="' . htmlspecialchars($row->telepon ?? '') . '">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">Alamat</label>
-                                                <textarea class="form-control" name="alamat" rows="3" required>' . htmlspecialchars($row->alamat) . '</textarea>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Wilayah</label>
-                                                <select class="form-select" name="id_wilayah">
-                                                    <option value="">Pilih Wilayah</option>
-                                                    ' . \App\Models\Wilayah::all()->map(function($w) use ($row) {
-                                                        return '<option value="' . $w->id . '" ' . ($row->id_wilayah == $w->id ? 'selected' : '') . '>' . htmlspecialchars($w->wilayah) . '</option>';
-                                                    })->implode('') . '
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Golongan</label>
-                                                <select class="form-select" name="id_gol">
-                                                    <option value="">Pilih Golongan</option>
-                                                    ' . \App\Models\Golongan::all()->map(function($g) use ($row) {
-                                                        return '<option value="' . $g->id . '" ' . ($row->id_gol == $g->id ? 'selected' : '') . '>' . htmlspecialchars($g->nama) . '</option>';
-                                                    })->implode('') . '
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Status</label>
-                                                <select class="form-select" name="status">
-                                                    <option value="aktif" ' . ($row->status == 'aktif' ? 'selected' : '') . '>Aktif</option>
-                                                    <option value="non-aktif" ' . ($row->status == 'non-aktif' ? 'selected' : '') . '>Non-Aktif</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>';
-
-                // Delete Modal
-                $deleteModal = '
-                <div class="modal fade" id="deleteModal' . $row->id . '" tabindex="-1" aria-labelledby="deleteModalLabel' . $row->id . '" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form action="' . route('pelanggan.destroy', $row->id) . '" method="POST">
-                                ' . csrf_field() . '
-                                ' . method_field('DELETE') . '
-                                <div class="modal-header bg-dark">
-                                    <h5 class="modal-title text-white">Hapus Pelanggan</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    Yakin ingin menghapus pelanggan <strong>' . htmlspecialchars($row->nama) . '</strong>?
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-danger">Hapus</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>';
-
-                return $editBtn . ' ' . $deleteBtn . $editModal . $deleteModal;
+            ->addColumn('status_text', function ($row) {
+                return $row->status;
             })
-            ->rawColumns(['status_badge', 'action'])
-            ->make(true);
+            ->addColumn('foto', function ($row) {
+                if ($row->FotoPelanggan && $row->FotoPelanggan->count() > 0) {
+                    $foto = $row->FotoPelanggan->first();
+                    $url = Storage::url($foto->foto);
+                    $nama = basename($foto->foto);
+                    return '<div class="d-flex align-items-center gap-2">
+                        <img src="' . $url . '" width="45" height="45" style="object-fit:cover;border-radius:6px;" alt="Foto" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2245%22 height=%2245%22%3E%3Crect fill=%22%23f8f9fa%22 width=%2245%22 height=%2245%22/%3E%3Ctext fill=%22%236c757d%22 font-size=%228%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22%3ENo%20Img%3C/text%3E%3C/svg%3E\';this.onerror=null;">
+                    </div>';
+                }
+                return '<div class="d-flex align-items-center gap-2">
+                    <div style="width:45px;height:45px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-image text-muted" style="font-size:18px;"></i></div>
+                    <small class="text-muted" style="font-size:11px;">-</small>
+                </div>';
+            })
+            ->addColumn('foto_url', function ($row) {
+                if ($row->FotoPelanggan && $row->FotoPelanggan->count() > 0) {
+                    return Storage::url($row->FotoPelanggan->first()->foto);
+                }
+                return null;
+            })
+            ->addColumn('foto_nama', function ($row) {
+                if ($row->FotoPelanggan && $row->FotoPelanggan->count() > 0) {
+                    return basename($row->FotoPelanggan->first()->foto);
+                }
+                return null;
+            })
+            ->addColumn('action', function ($row) {
+                $isActive = $row->status == Pelanggan::STATUS_AKTIF;
+                $btnClass = $isActive ? 'btn-danger' : 'btn-success';
+                $icon = $isActive ? 'fa-times-circle' : 'fa-check-circle';
+                $label = $isActive ? 'Non-Aktifkan' : 'Aktifkan';
+                return '<button type="button" class="btn btn-sm ' . $btnClass . ' btn-toggle-status" data-id="' . $row->id . '" data-nama="' . e($row->nama) . '" data-status="' . $row->status . '">
+                    <i class="fas ' . $icon . ' me-1"></i>' . $label . '</button>';
+            })
+
+                ->rawColumns(['status_badge', 'foto', 'action'])
+                ->make(true);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('DataTables Pelanggan error: ' . $e->getMessage());
+            return response()->json([
+                'draw' => request('draw', 1),
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+                'error' => 'Gagal memuat data. Silakan refresh halaman.'
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('DataTables unexpected error: ' . $e->getMessage());
+            return response()->json(['error' => 'Terjadi kesalahan sistem.'], 500);
+        }
     }
 
     /**
@@ -159,19 +111,22 @@ class PelangganController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $request->validate([
-                'no_sambu' => 'required|string|max:30|unique:pelanggans,no_sambu',
-                'no_kontrol' => 'required|string|max:50|unique:pelanggans,no_kontrol',
-                'nama' => 'required|string|max:100',
-                'alamat' => 'required|string',
-                'telepon' => 'nullable|string|max:20',
-                'id_wilayah' => 'nullable|exists:wilayahs,id',
-                'id_gol' => 'nullable|exists:golongans,id',
-                'status' => 'required|in:aktif,non-aktif',
-            ]);
+        $validated = $request->validate([
+            'no_sambu' => 'required|string|max:30|unique:pelanggans,no_sambu',
+            'no_kontrol' => 'required|string|max:50|unique:pelanggans,no_kontrol',
+            'nama' => 'required|string|max:100',
+            'alamat' => 'required|string',
+            'telepon' => 'nullable|string|max:20',
+            'type' => 'nullable|string|max:50',
+            'id_wilayah' => 'nullable|exists:wilayahs,id',
+            'id_gol' => 'nullable|exists:golongans,id',
+            'status' => ['required', Rule::in(Pelanggan::STATUS_LIST)],
+            'lat' => 'nullable|numeric',
+            'long' => 'nullable|numeric',
+        ]);
 
-            Pelanggan::create($request->all());
+        try {
+            Pelanggan::create($validated);
 
             return redirect()->back()->with('success', 'Data pelanggan berhasil ditambahkan.');
         } catch (\Exception $e) {
@@ -180,47 +135,39 @@ class PelangganController extends Controller
         }
     }
 
+
+
     /**
-     * Update the specified resource in storage.
+     * Display the specified resource.
      */
-    public function update(Request $request, string $id)
+    public function show(Pelanggan $pelanggan)
     {
-        try {
-            $pelanggan = Pelanggan::findOrFail($id);
+        $page = 'Detail Pelanggan';
 
-            $request->validate([
-                'no_sambu' => 'required|string|max:30|unique:pelanggans,no_sambu,' . $id,
-                'no_kontrol' => 'required|string|max:50|unique:pelanggans,no_kontrol,' . $id,
-                'nama' => 'required|string|max:100',
-                'alamat' => 'required|string',
-                'telepon' => 'nullable|string|max:20',
-                'id_wilayah' => 'nullable|exists:wilayahs,id',
-                'id_gol' => 'nullable|exists:golongans,id',
-                'status' => 'required|in:aktif,non-aktif',
-            ]);
+        // Load relationships
+        $pelanggan->load(['wilayah', 'golongan', 'PelangganDetail.Petugas', 'PelangganDetail.Kondisi', 'PelangganDetail.Wilayah', 'FotoPelanggan']);
 
-            $pelanggan->update($request->all());
+        $back_url = session('back_to_pelanggan', route('pelanggan.index'));
 
-            return redirect()->back()->with('update', 'Data pelanggan berhasil diperbarui.');
-        } catch (\Exception $e) {
-            Log::error('Error updating pelanggan: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memperbarui data pelanggan: ' . $e->getMessage());
-        }
+        return view('dashboard.pages.pelanggan.show', compact('pelanggan', 'page', 'back_url'));
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Toggle customer active/inactive status.
      */
-    public function destroy(string $id)
+    public function toggleStatus(Pelanggan $pelanggan)
     {
         try {
-            $pelanggan = Pelanggan::findOrFail($id);
-            $pelanggan->delete();
+            $pelanggan->status = $pelanggan->status == Pelanggan::STATUS_AKTIF
+                ? Pelanggan::STATUS_NON_AKTIF
+                : Pelanggan::STATUS_AKTIF;
+            $pelanggan->save();
 
-            return redirect()->back()->with('delete', 'Data pelanggan berhasil dihapus.');
+            $statusLabel = $pelanggan->status == Pelanggan::STATUS_AKTIF ? 'diaktifkan' : 'dinonaktifkan';
+            return response()->json(['success' => true, 'message' => "Status pelanggan berhasil {$statusLabel}."]);
         } catch (\Exception $e) {
-            Log::error('Error deleting pelanggan: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menghapus data pelanggan.');
+            Log::error('Error toggling status: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal mengubah status pelanggan.'], 500);
         }
     }
 }
