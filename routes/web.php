@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
         Route::get('baru', [PelangganBaruController::class, 'index'])->name('pelanggan.baru.index');
         Route::post('baru', [PelangganBaruController::class, 'store'])->name('pelanggan.baru.store');
         Route::get('baru/create', [PelangganBaruController::class, 'create'])->name('pelanggan.baru.create');
-        Route::get('baru/{id}/edit', [PelangganBaruController::class, 'edit'])->name('pelanggan.baru.edit');
+        Route::get('baru/{pelanggan}/edit', [PelangganBaruController::class, 'edit'])->name('pelanggan.baru.edit');
         Route::get('baru/{id}', [PelangganBaruController::class, 'show'])->name('pelanggan.baru.show');
         Route::put('baru/{id}', [PelangganBaruController::class, 'update'])->name('pelanggan.baru.update');
         Route::delete('baru/{id}', [PelangganBaruController::class, 'destroy'])->name('pelanggan.baru.destroy');

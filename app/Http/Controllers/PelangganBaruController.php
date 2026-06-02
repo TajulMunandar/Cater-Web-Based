@@ -334,8 +334,8 @@ class PelangganBaruController extends Controller
             Cache::forget('dashboard_koordinat');
             Cache::forget('dashboard_pencatatan');
 
-            return redirect()->route('pelanggan.baru.index')
-                ->with('update', 'Data pelanggan berhasil diperbarui.');
+            $backUrl = session('back_to_pelanggan', route('pelanggan.baru.index'));
+            return redirect()->to($backUrl)->with('success', 'Data pelanggan berhasil diperbarui.');
         } catch (\Illuminate\Database\QueryException $e) {
             \Illuminate\Support\Facades\DB::rollBack();
             $errorCode = $e->errorInfo[1] ?? 0;

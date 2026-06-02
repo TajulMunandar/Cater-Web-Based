@@ -243,11 +243,11 @@
                           </div>
                           @endif
 
-                          <div class="col-md-12">
-                              <div class="mb-3">
-                                  <label class="form-label">Tambah Foto Baru (Multiple)</label>
-                                  <input type="file" name="foto_pelanggan[]" id="foto_pelanggan" class="form-control" multiple accept="image/*" />
-                                  <small class="text-muted">Maksimal 2MB per foto, format: JPG, PNG, GIF. Biarkan kosong jika tidak ingin menambah foto.</small>
+                           <div class="col-md-12">
+                               <div class="mb-3">
+                                   <label class="form-label">Foto Pelanggan (Multiple) <span id="fileCounter" class="text-muted ms-2 small">0 foto dipilih</span></label>
+                                   <input type="file" name="foto_pelanggan[]" id="foto_pelanggan" class="form-control" multiple accept="image/*" />
+                                   <small class="text-muted">Maksimal 2MB per foto, format: JPG, PNG, GIF</small>
                                   <div id="fileInfoList" class="mt-2"></div>
                               </div>
                               <div id="preview_foto" class="row"></div>
@@ -323,48 +323,86 @@
             document.getElementById('submitBtn').disabled = true;
         });
 
-        // Enhanced file upload with size validation and info display
-        document.getElementById('foto_pelanggan').addEventListener('change', function(e) {
+        // Enhanced file upload with per-file cancel, validation, preview, and counter
+        var selectedFiles = [];
+
+        function updateFileCounter() {
+            var el = document.getElementById('fileCounter');
+            var n = selectedFiles.length;
+            el.textContent = n + ' foto dipilih';
+            el.className = 'ms-2 small' + (n > 0 ? ' text-primary fw-bold' : ' text-muted');
+        }
+
+        function rebuildInputFiles() {
+            var dt = new DataTransfer();
+            for (var i = 0; i < selectedFiles.length; i++) {
+                dt.items.add(selectedFiles[i]);
+            }
+            document.getElementById('foto_pelanggan').files = dt.files;
+        }
+
+        function renderPreviews() {
             var preview = document.getElementById('preview_foto');
             var fileInfo = document.getElementById('fileInfoList');
             preview.innerHTML = '';
             fileInfo.innerHTML = '';
-            var files = e.target.files;
             var maxSize = 2 * 1024 * 1024;
 
-            for (var i = 0; i < files.length; i++) {
-                var file = files[i];
-                var fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+            for (var i = 0; i < selectedFiles.length; i++) {
+                var file = selectedFiles[i];
+                var fileSizeKB = (file.size / 1024).toFixed(1);
                 var isValid = true;
                 var errorMsg = '';
+                var isImage = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'].includes(file.type);
 
                 if (file.size > maxSize) {
                     isValid = false;
                     errorMsg = 'Melebihi 2MB';
                 }
-                if (!['image/jpeg', 'image/png', 'image/gif', 'image/jpg'].includes(file.type)) {
+                if (!isImage) {
                     isValid = false;
                     errorMsg = 'Format tidak didukung';
                 }
 
                 var infoClass = isValid ? 'text-success' : 'text-danger';
-                var icon = isValid ? '✓' : '✗';
+                var iconMark = isValid ? '✓' : '✗';
                 var infoDiv = document.createElement('div');
                 infoDiv.className = infoClass + ' small';
-                infoDiv.textContent = icon + ' ' + file.name + ' — ' + fileSizeMB + ' MB' + (errorMsg ? ' (' + errorMsg + ')' : '');
+                infoDiv.textContent = iconMark + ' ' + file.name + ' — ' + fileSizeKB + ' KB' + (errorMsg ? ' (' + errorMsg + ')' : '');
                 fileInfo.appendChild(infoDiv);
 
-                if (!isValid) continue;
-
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var col = document.createElement('div');
-                    col.className = 'col-md-3 mb-2';
-                    col.innerHTML = '<div class="card"><img src="' + e.target.result + '" class="card-img-top" alt="Preview" style="height: 150px; object-fit: cover;"></div>';
-                    preview.appendChild(col);
-                };
-                reader.readAsDataURL(file);
+                (function(fileIndex, isValidFile) {
+                    if (!isValidFile) return;
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        var col = document.createElement('div');
+                        col.className = 'col-md-3 mb-2';
+                        col.innerHTML =
+                            '<div class="card position-relative">' +
+                                '<button type="button" class="btn-close position-absolute top-0 end-0 m-1 bg-white rounded-circle d-flex align-items-center justify-content-center" style="z-index:5;width:26px;height:26px;font-size:14px;box-shadow:0 1px 4px rgba(0,0,0,0.25);" onclick="removeFile(' + fileIndex + ')" aria-label="Hapus foto">&times;</button>' +
+                                '<img src="' + ev.target.result + '" class="card-img-top" alt="Preview" style="height:150px;object-fit:cover;">' +
+                            '</div>';
+                        preview.appendChild(col);
+                    };
+                    reader.readAsDataURL(file);
+                })(i, isValid);
             }
+            updateFileCounter();
+        }
+
+        window.removeFile = function(index) {
+            selectedFiles.splice(index, 1);
+            rebuildInputFiles();
+            renderPreviews();
+        };
+
+        document.getElementById('foto_pelanggan').addEventListener('change', function(e) {
+            var input = e.target;
+            for (var i = 0; i < input.files.length; i++) {
+                selectedFiles.push(input.files[i]);
+            }
+            rebuildInputFiles();
+            renderPreviews();
         });
     </script>
 @endpush
