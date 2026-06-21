@@ -8,10 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $id
- * @property int|null $id_wilayah
+ * @property int|null $id_rute
  * @property int|null $id_gol
  * @property string $no_sambu
- * @property string $no_kontrol
  * @property string $nama
  * @property string $alamat
  * @property string|null $telepon
@@ -34,12 +33,11 @@ class Pelanggan extends Model
 
     protected $fillable = [
         'no_sambu',
-        'no_kontrol',
         'nama',
         'alamat',
         'telepon',
         'type',
-        'id_wilayah',
+        'id_rute',
         'id_gol',
         'status',
         'lat',
@@ -89,9 +87,9 @@ class Pelanggan extends Model
         return $this->hasMany(FotoPelanggan::class, 'id_pelanggan', 'id');
     }
 
-    public function wilayah()
+    public function rute()
     {
-        return $this->belongsTo(Wilayah::class, 'id_wilayah');
+        return $this->belongsTo(Rute::class, 'id_rute');
     }
 
     public function golongan()

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Golongan;
 use App\Models\Pelanggan;
+use App\Models\Rute;
 use App\Models\User;
 use App\Models\Wilayah;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,6 +16,7 @@ class PelangganControllerTest extends TestCase
 
     private User $user;
     private Wilayah $wilayah;
+    private Rute $rute;
     private Golongan $golongan;
 
     protected function setUp(): void
@@ -29,6 +31,12 @@ class PelangganControllerTest extends TestCase
             'cabang' => 'Cabang Test',
             'center_lat' => '0.0000',
             'center_long' => '0.0000',
+        ]);
+
+        $this->rute = Rute::create([
+            'id_wilayah' => $this->wilayah->id,
+            'rute' => 'Rute Test',
+            'ket' => 'Keterangan Rute',
         ]);
 
         $this->golongan = Golongan::create([
@@ -64,7 +72,6 @@ class PelangganControllerTest extends TestCase
 
         Pelanggan::factory()->create([
             'no_sambu' => 'SR-001',
-            'no_kontrol' => 'KR-001',
             'nama' => 'DataTables Test',
         ]);
 
@@ -78,7 +85,7 @@ class PelangganControllerTest extends TestCase
             'recordsTotal',
             'recordsFiltered',
             'data' => [
-                '*' => ['DT_RowIndex', 'no_sambu', 'no_kontrol', 'nama', 'alamat', 'wilayah', 'golongan', 'status_badge', 'status_text'],
+                '*' => ['DT_RowIndex', 'no_sambu', 'nama', 'alamat', 'wilayah', 'golongan', 'status_badge', 'status_text'],
             ],
         ]);
     }
@@ -89,12 +96,11 @@ class PelangganControllerTest extends TestCase
 
         $response = $this->post(route('pelanggan.store'), [
             'no_sambu' => 'SB-001',
-            'no_kontrol' => 'KR-001',
             'nama' => 'Test User',
             'alamat' => 'Jl. Test No. 1',
             'telepon' => '08123456789',
             'type' => 'Rumah',
-            'id_wilayah' => $this->wilayah->id,
+            'id_rute' => $this->rute->id,
             'id_gol' => $this->golongan->id,
             'status' => Pelanggan::STATUS_AKTIF,
         ]);
@@ -115,7 +121,7 @@ class PelangganControllerTest extends TestCase
 
         $response = $this->post(route('pelanggan.store'), []);
 
-        $response->assertSessionHasErrors(['no_sambu', 'no_kontrol', 'nama', 'alamat', 'status']);
+        $response->assertSessionHasErrors(['no_sambu', 'nama', 'alamat', 'status']);
     }
 
     public function test_store_fails_with_invalid_status(): void
@@ -124,7 +130,6 @@ class PelangganControllerTest extends TestCase
 
         $response = $this->post(route('pelanggan.store'), [
             'no_sambu' => 'SB-002',
-            'no_kontrol' => 'KR-002',
             'nama' => 'Invalid Status',
             'alamat' => 'Jl. Test',
             'status' => 'invalid_status_value',
@@ -138,11 +143,9 @@ class PelangganControllerTest extends TestCase
         $this->actingAs($this->user);
 
         $pelanggan = Pelanggan::factory()->create([
-            'no_sambu' => 'SB-003',
-            'no_kontrol' => 'KR-003',
             'nama' => 'Show Test User',
-            'alamat' => 'Jl. Tampil No. 1',
-            'id_wilayah' => $this->wilayah->id,
+            'no_sambu' => 'SB-003',
+            'id_rute' => $this->rute->id,
             'id_gol' => $this->golongan->id,
             'status' => Pelanggan::STATUS_AKTIF,
         ]);

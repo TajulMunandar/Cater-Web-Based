@@ -6,7 +6,7 @@ use App\Models\Golongan;
 use App\Models\KondisiMeter;
 use App\Models\Pelanggan;
 use App\Models\Petugas;
-use App\Models\Wilayah;
+use App\Models\Rute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -37,14 +37,14 @@ class PelangganBaruController extends Controller
     public function data(Request $request)
     {
         try {
-            $pelanggans = Pelanggan::with(['wilayah', 'golongan'])
-                ->select(['id', 'no_sambu', 'no_kontrol', 'nama', 'alamat', 'telepon', 'type', 'status', 'id_wilayah', 'id_gol'])
+            $pelanggans = Pelanggan::with(['rute.wilayah', 'golongan'])
+                ->select(['id', 'no_sambu', 'nama', 'alamat', 'telepon', 'type', 'status', 'id_rute', 'id_gol'])
                 ->latest();
 
             return DataTables::of($pelanggans)
                 ->addIndexColumn()
                 ->addColumn('wilayah', function ($row) {
-                    return $row->wilayah ? $row->wilayah->wilayah : '-';
+                    return $row->rute && $row->rute->wilayah ? $row->rute->wilayah->wilayah : '-';
                 })
                 ->addColumn('golongan', function ($row) {
                     return $row->golongan ? $row->golongan->nama : '-';
@@ -84,10 +84,10 @@ class PelangganBaruController extends Controller
     {
         $petugases = Petugas::all();
         $kondisis = KondisiMeter::all();
-        $wilayahs = Wilayah::all();
+        $rutes = Rute::with('wilayah')->get();
         $golongans = Golongan::all();
         $page = 'Tambah Pelanggan';
-        return view('dashboard.pages.data-pelanggan.create')->with(compact('page', 'petugases', 'kondisis', 'wilayahs', 'golongans'));
+        return view('dashboard.pages.data-pelanggan.create')->with(compact('page', 'petugases', 'kondisis', 'rutes', 'golongans'));
     }
 
     /**
@@ -97,24 +97,20 @@ class PelangganBaruController extends Controller
     {
         $validatedData = $request->validate([
             'no_sambu' => 'required|string|max:30|unique:pelanggans,no_sambu',
-            'no_kontrol' => 'required|string|max:50|unique:pelanggans,no_kontrol',
             'nama' => 'required|string|max:100',
             'alamat' => 'required|string',
             'telepon' => 'nullable|string|max:20',
             'type' => 'nullable|string|max:50',
-            'id_wilayah' => 'nullable|exists:wilayahs,id',
+            'id_rute' => 'nullable|exists:rutes,id',
             'id_gol' => 'nullable|exists:golongans,id',
             'status' => ['required', Rule::in(Pelanggan::STATUS_LIST)],
             'lat' => 'nullable|numeric',
             'long' => 'nullable|numeric',
             'id_petugas' => 'required|exists:petugas,id',
-            'rute' => 'required|integer|min:0',
             'id_kondisi' => 'required|exists:kondisi_meters,id',
-            'waktu_catat_meter' => 'required|date|before_or_equal:now',
             'stand_terakhir' => 'required|integer|min:0',
             'ket' => 'nullable|string|max:100',
             'urutan' => 'required|integer|min:0',
-            'id_wilayah_detail' => 'required|exists:wilayahs,id',
             'foto_pelanggan.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -123,12 +119,11 @@ class PelangganBaruController extends Controller
             // Create Pelanggan
             $pelanggan = Pelanggan::create([
                 'no_sambu' => $validatedData['no_sambu'],
-                'no_kontrol' => $validatedData['no_kontrol'],
                 'nama' => $validatedData['nama'],
                 'alamat' => $validatedData['alamat'],
                 'telepon' => $validatedData['telepon'] ?? null,
                 'type' => $validatedData['type'] ?? null,
-                'id_wilayah' => $validatedData['id_wilayah'] ?? null,
+                'id_rute' => $validatedData['id_rute'] ?? null,
                 'id_gol' => $validatedData['id_gol'] ?? null,
                 'status' => $validatedData['status'],
                 'lat' => $validatedData['lat'] ?? null,
@@ -138,13 +133,10 @@ class PelangganBaruController extends Controller
             // Create Pelanggan Detail
             $pelanggan->PelangganDetail()->create([
                 'id_petugas' => $validatedData['id_petugas'],
-                'rute' => $validatedData['rute'],
                 'id_kondisi' => $validatedData['id_kondisi'],
-                'waktu_catat_meter' => \Carbon\Carbon::parse($validatedData['waktu_catat_meter'], 'Asia/Jakarta'),
                 'stand_terakhir' => $validatedData['stand_terakhir'],
                 'ket' => $validatedData['ket'] ?? null,
                 'urutan' => $validatedData['urutan'],
-                'id_wilayah' => $validatedData['id_wilayah_detail'],
             ]);
 
             // Handle Foto uploads
@@ -198,10 +190,9 @@ class PelangganBaruController extends Controller
     public function show(string $id)
     {
         $pelanggan = Pelanggan::with([
-            'wilayah', 'golongan',
+            'rute.wilayah', 'golongan',
             'PelangganDetail.Petugas',
             'PelangganDetail.Kondisi',
-            'PelangganDetail.Wilayah',
             'FotoPelanggan'
         ])->findOrFail($id);
 
@@ -216,22 +207,21 @@ class PelangganBaruController extends Controller
     public function edit(Pelanggan $pelanggan)
     {
         $pelanggan->load([
-            'wilayah', 'golongan',
+            'rute.wilayah', 'golongan',
             'PelangganDetail.Petugas',
             'PelangganDetail.Kondisi',
-            'PelangganDetail.Wilayah',
             'FotoPelanggan'
         ]);
 
         $detail = $pelanggan->PelangganDetail->first();
         $petugases = Petugas::all();
         $kondisis = KondisiMeter::all();
-        $wilayahs = Wilayah::all();
+        $rutes = Rute::with('wilayah')->get();
         $golongans = Golongan::all();
         $page = 'Edit Pelanggan';
 
         return view('dashboard.pages.data-pelanggan.edit')
-            ->with(compact('page', 'pelanggan', 'detail', 'petugases', 'kondisis', 'wilayahs', 'golongans'));
+            ->with(compact('page', 'pelanggan', 'detail', 'petugases', 'kondisis', 'rutes', 'golongans'));
     }
 
     /**
@@ -243,24 +233,20 @@ class PelangganBaruController extends Controller
 
         $validatedData = $request->validate([
             'no_sambu' => 'required|string|max:30|unique:pelanggans,no_sambu,' . $pelanggan->id,
-            'no_kontrol' => 'required|string|max:50|unique:pelanggans,no_kontrol,' . $pelanggan->id,
             'nama' => 'required|string|max:100',
             'alamat' => 'required|string',
             'telepon' => 'nullable|string|max:20',
             'type' => 'nullable|string|max:50',
-            'id_wilayah' => 'nullable|exists:wilayahs,id',
+            'id_rute' => 'nullable|exists:rutes,id',
             'id_gol' => 'nullable|exists:golongans,id',
             'status' => ['required', Rule::in(Pelanggan::STATUS_LIST)],
             'lat' => 'nullable|numeric',
             'long' => 'nullable|numeric',
             'id_petugas' => 'required|exists:petugas,id',
-            'rute' => 'required|integer|min:0',
             'id_kondisi' => 'required|exists:kondisi_meters,id',
-            'waktu_catat_meter' => 'required|date|before_or_equal:now',
             'stand_terakhir' => 'required|integer|min:0',
             'ket' => 'nullable|string|max:100',
             'urutan' => 'required|integer|min:0',
-            'id_wilayah_detail' => 'required|exists:wilayahs,id',
             'foto_pelanggan.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'hapus_foto.*' => 'nullable|exists:foto_pelanggans,id',
         ]);
@@ -270,12 +256,11 @@ class PelangganBaruController extends Controller
             // Update Pelanggan
             $pelanggan->update([
                 'no_sambu' => $validatedData['no_sambu'],
-                'no_kontrol' => $validatedData['no_kontrol'],
                 'nama' => $validatedData['nama'],
                 'alamat' => $validatedData['alamat'],
                 'telepon' => $validatedData['telepon'] ?? null,
                 'type' => $validatedData['type'] ?? null,
-                'id_wilayah' => $validatedData['id_wilayah'] ?? null,
+                'id_rute' => $validatedData['id_rute'] ?? null,
                 'id_gol' => $validatedData['id_gol'] ?? null,
                 'status' => $validatedData['status'],
                 'lat' => $validatedData['lat'] ?? null,
@@ -285,13 +270,10 @@ class PelangganBaruController extends Controller
             // Update or create Pelanggan Detail (first record)
             $detailData = [
                 'id_petugas' => $validatedData['id_petugas'],
-                'rute' => $validatedData['rute'],
                 'id_kondisi' => $validatedData['id_kondisi'],
-                'waktu_catat_meter' => \Carbon\Carbon::parse($validatedData['waktu_catat_meter'], 'Asia/Jakarta'),
                 'stand_terakhir' => $validatedData['stand_terakhir'],
                 'ket' => $validatedData['ket'] ?? null,
                 'urutan' => $validatedData['urutan'],
-                'id_wilayah' => $validatedData['id_wilayah_detail'],
             ];
 
             $detail = $pelanggan->PelangganDetail()->firstOrCreate(

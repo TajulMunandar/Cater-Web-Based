@@ -15,31 +15,39 @@ class WilayahController extends Controller
     public function index()
     {
         $page = 'Wilayah';
-        return view('dashboard.pages.settings.wilayah')->with(compact('page'));
+        $wilayahs = Wilayah::all();
+        return view('dashboard.pages.settings.wilayah', compact('page', 'wilayahs'));
     }
 
     public function data(Request $request)
     {
-        $wilayahs = Wilayah::select(['id', 'kode', 'wilayah', 'cabang', 'center_lat', 'center_long', 'ket'])
+        $wilayahs = Wilayah::select(['id', 'wilayah', 'center_lat', 'center_long', 'ket'])
+            ->withCount('rutes')
             ->latest();
 
         return DataTables::of($wilayahs)
             ->addIndexColumn()
+            ->addColumn('rute_count', function ($row) {
+                $count = $row->rutes_count;
+                $badge = $count > 0
+                    ? '<span class="badge-rute-count">' . $count . ' Rute</span>'
+                    : '<span class="badge-rute-count badge-empty">Belum ada rute</span>';
+                return $badge;
+            })
             ->addColumn('action', function ($row) {
-                $editBtn = '<button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal' . $row->id . '"><i
-                                            class="fas fa-pen-to-square"></i></button>';
-                $deleteBtn = '<button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal' . $row->id . '"><i
-                                            class="fas fa-trash"></i></button>';
-                // Generate modal HTML
+                $ruteCount = $row->rutes_count;
+                $editBtn = '<button class="btn-action btn-edit" data-bs-toggle="modal" data-bs-target="#editModal' . $row->id . '" title="Edit Wilayah"><i class="fas fa-pen-to-square"></i><span class="d-none d-md-inline"> Edit</span></button>';
+                $deleteBtn = '<button class="btn-action btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal' . $row->id . '" title="Hapus Wilayah"><i class="fas fa-trash"></i><span class="d-none d-md-inline"> Hapus</span></button>';
+
                 $editModal = '<div class="modal fade" id="editModal' . $row->id . '" tabindex="-1" aria-labelledby="editModalLabel' . $row->id . '" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form action="' . route('wilayah.update', $row->id) . '" method="POST">
                             ' . csrf_field() . '
                             ' . method_field('PUT') . '
-                            <div class="modal-header bg-dark">
-                                <h5 class="modal-title text-white" id="editModalLabel' . $row->id . '">Edit Wilayah</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel' . $row->id . '">Edit Wilayah</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="mb-3">
@@ -47,16 +55,8 @@ class WilayahController extends Controller
                                     <input type="text" class="form-control" id="wilayah' . $row->id . '" name="wilayah" value="' . htmlspecialchars($row->wilayah) . '">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="kode' . $row->id . '" class="form-label">Kode Wilayah</label>
-                                    <input type="text" class="form-control" id="kode' . $row->id . '" name="kode" value="' . htmlspecialchars($row->kode) . '">
-                                </div>
-                                <div class="mb-3">
                                     <label for="ket' . $row->id . '" class="form-label">Keterangan</label>
                                     <input type="text" class="form-control" id="ket' . $row->id . '" name="ket" value="' . htmlspecialchars($row->ket) . '">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="cabang' . $row->id . '" class="form-label">Cabang</label>
-                                    <input type="text" class="form-control" id="cabang' . $row->id . '" name="cabang" value="' . htmlspecialchars($row->cabang) . '">
                                 </div>
                                 <div class="mb-3">
                                     <label for="center_lat' . $row->id . '" class="form-label">Center Latitude</label>
@@ -73,7 +73,7 @@ class WilayahController extends Controller
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
+                                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                             </div>
                         </form>
                     </div>
@@ -82,22 +82,31 @@ class WilayahController extends Controller
 
                 $deleteUrl = route('wilayah.destroy', $row->id);
 
+                $warningMsg = $ruteCount > 0
+                    ? 'Wilayah <strong>' . htmlspecialchars($row->wilayah) . '</strong> memiliki <strong>' . $ruteCount . ' rute</strong> yang akan ikut terhapus.'
+                    : 'Yakin ingin menghapus wilayah <strong>' . htmlspecialchars($row->wilayah) . '</strong>?';
+
                 $deleteModal = '<div class="modal fade" id="deleteModal' . $row->id . '" tabindex="-1" aria-labelledby="deleteModalLabel' . $row->id . '" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <form action="' . $deleteUrl . '" method="POST">
                                 ' . csrf_field() . '
                                 ' . method_field('DELETE') . '
-                                <div class="modal-header bg-dark">
-                                    <h5 class="modal-title text-white" id="deleteModalLabel' . $row->id . '">Delete Wilayah</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteModalLabel' . $row->id . '">Hapus Wilayah</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    Are you sure you want to delete wilayah <strong>' . $row->wilayah . '</strong>?
+                                    <div class="text-center py-3">
+                                        <div class="mb-3" style="font-size:2.5rem;color:var(--color-danger);">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        ' . $warningMsg . '
+                                    </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-danger">Hapus</button>
+                                    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
                                 </div>
                             </form>
                         </div>
@@ -106,7 +115,7 @@ class WilayahController extends Controller
 
                 return $editBtn . ' ' . $deleteBtn . $editModal . $deleteModal;
             })
-            ->rawColumns(['action'])
+            ->rawColumns(['rute_count', 'action'])
             ->make(true);
     }
 
@@ -126,11 +135,9 @@ class WilayahController extends Controller
         try {
             $request->validate([
                 'wilayah' => 'required|string|max:30',
-                'kode' => 'required|string|max:20',
-                'ket' => 'required|string|max:100',
-                'cabang' => 'required|string|max:100',
-                'center_lat' => 'required|string|max:100',
-                'center_long' => 'required|string|max:100',
+                'ket' => 'nullable|string|max:100',
+                'center_lat' => 'nullable|string|max:100',
+                'center_long' => 'nullable|string|max:100',
             ]);
 
             Wilayah::create($request->all());
@@ -169,10 +176,9 @@ class WilayahController extends Controller
         try {
             $request->validate([
                 'wilayah' => 'required|string|max:30',
-                'ket' => 'required|string|max:100',
-                'cabang' => 'required|string|max:100',
-                'center_lat' => 'required|string|max:100',
-                'center_long' => 'required|string|max:100',
+                'ket' => 'nullable|string|max:100',
+                'center_lat' => 'nullable|string|max:100',
+                'center_long' => 'nullable|string|max:100',
             ]);
 
             $wilayah = Wilayah::findOrFail($id);

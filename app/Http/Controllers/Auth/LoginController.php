@@ -18,6 +18,11 @@ class LoginController extends Controller
         $this->middleware('auth')->only('logout');
     }
 
+    public function username()
+    {
+        return 'username';
+    }
+
     protected function authenticated(Request $request, $user)
     {
         return redirect('/home');

@@ -202,6 +202,7 @@ class PetugasController extends Controller
             $user = User::create([
                 'name' => $request->nama,
                 'email' => $request->email,
+                'username' => $request->username,
                 'password' => Hash::make($request->password),
             ]);
 
@@ -303,6 +304,7 @@ class PetugasController extends Controller
             $petugas->user->update([
                 'name' => $request->nama,
                 'email' => $request->email,
+                'username' => $request->username,
             ]);
 
             $petugas->update([

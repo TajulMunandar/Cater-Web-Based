@@ -27,7 +27,7 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg py-2" style="border-radius:var(--radius-md);min-width:200px;">
                 <li>
-                    <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-3" href="#" style="font-size:0.85rem;border-radius:var(--radius-sm);">
+                    <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-3" href="{{ route('profile.edit') }}" style="font-size:0.85rem;border-radius:var(--radius-sm);">
                         <i class="ti ti-user" style="font-size:1rem;color:var(--color-text-muted);"></i>
                         Profile
                     </a>

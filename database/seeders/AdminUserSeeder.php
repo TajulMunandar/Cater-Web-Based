@@ -17,6 +17,7 @@ class AdminUserSeeder extends Seeder
         // Create Admin user (level = 0)
         User::create([
             'name' => 'Admin',
+            'username' => 'admin',
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
             'level' => 0,
@@ -25,6 +26,7 @@ class AdminUserSeeder extends Seeder
         // Create Petugas user (level = 1)
         User::create([
             'name' => 'Petugas',
+            'username' => 'petugas',
             'email' => 'petugas@example.com',
             'password' => Hash::make('password'),
             'level' => 1,

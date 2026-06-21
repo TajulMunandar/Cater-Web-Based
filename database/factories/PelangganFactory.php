@@ -19,7 +19,6 @@ class PelangganFactory extends Factory
     {
         return [
             'no_sambu' => fake()->unique()->regexify('[A-Z]{2}-[0-9]{4}'),
-            'no_kontrol' => fake()->unique()->regexify('[A-Z]{2}-[0-9]{4}'),
             'nama' => fake()->name(),
             'alamat' => fake()->address(),
             'telepon' => fake()->phoneNumber(),

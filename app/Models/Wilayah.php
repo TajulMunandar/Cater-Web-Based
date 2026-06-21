@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property int $id
  * @property string $wilayah
- * @property string $kode
  * @property string $ket
- * @property string $cabang
  * @property string $center_lat
  * @property string $center_long
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -23,15 +21,13 @@ class Wilayah extends Model
 
     protected $fillable = [
         'wilayah',
-        'kode',
         'ket',
-        'cabang',
         'center_lat',
         'center_long',
     ];
 
-    public function PelangganDetail()
+    public function rutes()
     {
-        return $this->hasMany(PelangganDetail::class, 'id_wilayah');
+        return $this->hasMany(Rute::class, 'id_wilayah');
     }
 }

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\CatatMeterController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DsmlPelangganController;
 use App\Http\Controllers\GolonganController;
 use App\Http\Controllers\InfoController;
 use App\Http\Controllers\KondisiController;
@@ -10,7 +9,9 @@ use App\Http\Controllers\PelangganBaruController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\PetaPelangganController;
 use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RekapController;
+use App\Http\Controllers\RuteController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/notifikasi', [DashboardController::class, 'notifikasi'])->name('dashboard.notifikasi');
     Route::post('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
 
+    // Profile routes
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
     // Resource routes for 'info'
     Route::resource('info', InfoController::class);
 
@@ -28,7 +34,6 @@ Route::middleware('auth')->group(function () {
     Route::prefix('pelanggan')->group(function () {
         Route::get('/peta', [PetaPelangganController::class, 'index'])->name('peta.index');
         Route::get('data-peta', [PetaPelangganController::class, 'data'])->name('pelanggan.data-peta');
-        Route::resource('dsml', DsmlPelangganController::class);
         Route::get('data', [PelangganController::class, 'data'])->name('pelanggan.data');
         // Pelanggan Baru - using 'baru' path
         Route::get('baru', [PelangganBaruController::class, 'index'])->name('pelanggan.baru.index');
@@ -44,6 +49,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [PelangganController::class, 'index'])->name('pelanggan.index');
         Route::post('/', [PelangganController::class, 'store'])->name('pelanggan.store');
         Route::get('/{pelanggan}', [PelangganController::class, 'show'])->name('pelanggan.show');
+        Route::put('/{pelanggan}', [PelangganController::class, 'update'])->name('pelanggan.update');
+        Route::post('/{pelanggan}/detail', [PelangganController::class, 'storeDetail'])->name('pelanggan.detail.store');
         Route::patch('/{pelanggan}/toggle-status', [PelangganController::class, 'toggleStatus'])->name('pelanggan.toggle-status');
     });
 
@@ -77,10 +84,13 @@ Route::middleware('auth')->group(function () {
     Route::prefix('rekap')->group(function () {
         Route::get('index', [RekapController::class, 'index'])->name('rekap.index');
         Route::get('data-catat-meter', [RekapController::class, 'dataCatatMeter'])->name('rekap.data-catat-meter');
+        Route::get('excel-catat-meter', [RekapController::class, 'excelCatatMeter'])->name('rekap.excel-catat-meter');
         Route::get('kondisi', [RekapController::class, 'kondisi'])->name('rekap.kondisi');
         Route::get('data-kondisi', [RekapController::class, 'dataKondisi'])->name('rekap.data-kondisi');
+        Route::get('excel-kondisi', [RekapController::class, 'excelKondisi'])->name('rekap.excel-kondisi');
         Route::get('wilayah', [RekapController::class, 'wilayah'])->name('rekap.wilayah');
         Route::get('data-wilayah', [RekapController::class, 'dataWilayah'])->name('rekap.data-wilayah');
+        Route::get('excel-wilayah', [RekapController::class, 'excelWilayah'])->name('rekap.excel-wilayah');
         Route::post('', [RekapController::class, 'store'])->name('rekap.store');
         Route::get('{id}', [RekapController::class, 'show'])->name('rekap.show');
         Route::put('{id}', [RekapController::class, 'update'])->name('rekap.update');
@@ -91,6 +101,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('settings')->group(function () {
         Route::resource('wilayah', WilayahController::class);
         Route::get('wilayahs/data', [WilayahController::class, 'data'])->name('wilayah.data');
+        Route::post('rute', [RuteController::class, 'store'])->name('rute.store');
+        Route::put('rute/{rute}', [RuteController::class, 'update'])->name('rute.update');
+        Route::delete('rute/{rute}', [RuteController::class, 'destroy'])->name('rute.destroy');
+        Route::get('rutes/data', [RuteController::class, 'data'])->name('rute.data');
+        Route::get('rute/list/{wilayah}', [RuteController::class, 'list'])->name('rute.list');
         Route::resource('kondisi', KondisiController::class);
         Route::resource('petugas', PetugasController::class);
         Route::get('petugases/data', [PetugasController::class, 'data'])->name('petugas.data');

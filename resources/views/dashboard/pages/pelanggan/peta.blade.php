@@ -21,10 +21,6 @@
                             <a class="nav-link active position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
                                 href="/pelanggan/peta"><i class="fas fa-map me-2"></i>Peta Pelanggan</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
-                                aria-current="page" href="/pelanggan/dsml"><i class="fas fa-list me-2"></i>DSML</a>
-                        </li>
                     </ul>
                 </div>
             </div>
@@ -131,11 +127,10 @@
                                         <div style="min-width: 200px;">
                                             <h6>${pelanggan.nama}</h6>
                                             <p><strong>No. Sambu:</strong> ${pelanggan.no_sambu || '-'}</p>
-                                            <p><strong>No. Kontrol:</strong> ${pelanggan.no_kontrol || '-'}</p>
                                             <p><strong>Alamat:</strong> ${pelanggan.alamat || '-'}</p>
                                             <p><strong>Telepon:</strong> ${pelanggan.telepon || '-'}</p>
                                             <p><strong>Golongan:</strong> ${pelanggan.golongan ? pelanggan.golongan.nama : '-'}</p>
-                                            <p><strong>Wilayah:</strong> ${pelanggan.wilayah ? pelanggan.wilayah.wilayah : '-'}</p>
+                                            <p><strong>Wilayah:</strong> ${pelanggan.rute && pelanggan.rute.wilayah ? pelanggan.rute.wilayah.wilayah : '-'}</p>
                                             <p><strong>Status:</strong> ${pelanggan.status}</p>
                                             <a href="/pelanggan/${pelanggan.id}" class="btn btn-sm btn-primary">Lihat Detail</a>
                                         </div>

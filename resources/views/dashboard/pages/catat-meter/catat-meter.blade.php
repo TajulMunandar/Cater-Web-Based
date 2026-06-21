@@ -149,8 +149,6 @@ $tahunList = range(date('Y'), date('Y') - 5);
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Stand Meter ⇅</th>
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Waktu ⇅</th>
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Nama ⇅</th>
-                                <th style="font-weight:700;font-size:13px;text-align:center;">No Kontrol ⇅</th>
-                                <th style="font-weight:700;font-size:13px;text-align:center;">No Sambung ⇅</th>
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Wilayah ⇅</th>
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Kondisi Meter ⇅</th>
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Petugas ⇅</th>
@@ -405,16 +403,8 @@ $tahunList = range(date('Y'), date('Y') - 5);
                         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:14px;color:#1e293b;" id="detail_stand">-</div>
                     </div>
                     <div class="col-md-6">
-                        <label style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;display:block;">No Sambung</label>
-                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:14px;color:#1e293b;" id="detail_no_sambu">-</div>
-                    </div>
-                    <div class="col-md-6">
                         <label style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;display:block;">Waktu Catat</label>
                         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:14px;color:#1e293b;" id="detail_waktu">-</div>
-                    </div>
-                    <div class="col-md-6">
-                        <label style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;display:block;">No Kontrol</label>
-                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:14px;color:#1e293b;" id="detail_no_kontrol">-</div>
                     </div>
                     <div class="col-md-6">
                         <label style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;display:block;">Petugas</label>
@@ -566,8 +556,6 @@ $(document).ready(function() {
             { data: 'stand_meter', name: 'stand' },
             { data: 'waktu', name: 'waktu' },
             { data: 'nama', name: 'nama' },
-            { data: 'no_kontrol', name: 'no_kontrol' },
-            { data: 'no_sambung', name: 'no_sambung' },
             { data: 'wilayah', name: 'wilayah' },
             { data: 'kondisi_badge', name: 'kondisi_badge', orderable: false, searchable: false },
             { data: 'petugas', name: 'petugas' },
@@ -848,9 +836,7 @@ function showDetail(d) {
     $('#detail_telepon').text(d.telepon || '-');
     $('#detail_alamat').text(d.alamat || '-');
     $('#detail_stand').text(d.stand || '-');
-    $('#detail_no_sambu').text(d.no_sambu || '-');
     $('#detail_waktu').text(waktu);
-    $('#detail_no_kontrol').text(d.no_kontrol || '-');
     $('#detail_petugas').text(d.petugas_nama || '-');
 
     // Kondisi badge
@@ -896,9 +882,7 @@ function printDetail() {
         ['No Telepon', $('#detail_telepon').text()],
         ['Alamat', $('#detail_alamat').text()],
         ['Stand Meter', $('#detail_stand').text()],
-        ['No Sambung', $('#detail_no_sambu').text()],
         ['Waktu Catat', $('#detail_waktu').text()],
-        ['No Kontrol', $('#detail_no_kontrol').text()],
         ['Petugas', $('#detail_petugas').text()]
     ];
     fields.forEach(function(f) {

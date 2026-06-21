@@ -490,10 +490,15 @@
                         <i class="fas fa-search search-icon"></i>
                         <input type="text" id="searchWilayah" class="form-control form-control-sm" placeholder="Cari wilayah..." style="padding-left:2rem;width:240px;">
                     </div>
-                    <span class="text-muted" style="font-size:0.75rem;">
-                        {{ \Carbon\Carbon::create()->month((int)$bulan)->format('F') }} {{ $tahun }}
-                        &middot; {{ $semuaWilayah->count() }} wilayah
-                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted" style="font-size:0.75rem;">
+                            {{ \Carbon\Carbon::create()->month((int)$bulan)->format('F') }} {{ $tahun }}
+                            &middot; {{ $semuaWilayah->count() }} wilayah
+                        </span>
+                        <button id="exportExcelWilayah" class="btn btn-sm" style="background:#16a34a;color:#fff;border-radius:8px;font-size:0.8rem;font-weight:500;padding:0.35rem 0.85rem;border:none;">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                    </div>
                 </div>
 
                 @php
@@ -572,6 +577,17 @@
 @push('script')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const btnExport = document.getElementById('exportExcelWilayah');
+        if (btnExport) {
+            btnExport.addEventListener('click', function() {
+                const params = new URLSearchParams({
+                    bulan: document.getElementById('bulan').value,
+                    tahun: document.getElementById('tahun').value,
+                });
+                window.location.href = '{{ route("rekap.excel-wilayah") }}?' + params.toString();
+            });
+        }
+
         const searchInput = document.getElementById('searchWilayah');
         const tableRows = document.querySelectorAll('#rekapTable tbody tr');
 

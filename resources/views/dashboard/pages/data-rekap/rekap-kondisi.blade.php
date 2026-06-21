@@ -422,9 +422,14 @@
                         <i class="fas fa-table me-2" style="color:#4338ca;"></i>
                         Data Kondisi {{ \Carbon\Carbon::create()->month((int)$bulan)->format('F') }} {{ $tahun }}
                     </h6>
-                    <span class="text-muted" style="font-size:0.75rem;">
-                        {{ $petugas->count() }} petugas &middot; {{ $kondisiList->count() }} kondisi
-                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted" style="font-size:0.75rem;">
+                            {{ $petugas->count() }} petugas &middot; {{ $kondisiList->count() }} kondisi
+                        </span>
+                        <button id="exportExcelKondisi" class="btn btn-sm" style="background:#16a34a;color:#fff;border-radius:8px;font-size:0.8rem;font-weight:500;padding:0.35rem 0.85rem;border:none;">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                    </div>
                 </div>
 
                 @if($petugas->count() > 0 && $kondisiList->count() > 0)
@@ -490,3 +495,20 @@
     </div>
 </div>
 @endsection
+
+@push('script')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnExport = document.getElementById('exportExcelKondisi');
+        if (btnExport) {
+            btnExport.addEventListener('click', function() {
+                const params = new URLSearchParams({
+                    bulan: document.getElementById('bulan').value,
+                    tahun: document.getElementById('tahun').value,
+                });
+                window.location.href = '{{ route("rekap.excel-kondisi") }}?' + params.toString();
+            });
+        }
+    });
+</script>
+@endpush

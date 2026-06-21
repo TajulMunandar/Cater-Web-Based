@@ -348,11 +348,16 @@
                         <i class="fas fa-table me-2" style="color:#3b82f6;"></i>
                         Data Pencatatan {{ \Carbon\Carbon::create()->month((int)$bulan)->format('F') }} {{ $tahun }}
                     </h6>
-                    <span class="text-muted" style="font-size:0.75rem;">
-                        @if($petugas->count() > 0)
-                            {{ $petugas->count() }} petugas
-                        @endif
-                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted" style="font-size:0.75rem;">
+                            @if($petugas->count() > 0)
+                                {{ $petugas->count() }} petugas
+                            @endif
+                        </span>
+                        <button id="exportExcelCatatMeter" class="btn btn-sm" style="background:#16a34a;color:#fff;border-radius:8px;font-size:0.8rem;font-weight:500;padding:0.35rem 0.85rem;border:none;">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                    </div>
                 </div>
 
                 @if($petugas->count() > 0)
@@ -444,6 +449,17 @@
 @push('script')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const btnExport = document.getElementById('exportExcelCatatMeter');
+        if (btnExport) {
+            btnExport.addEventListener('click', function() {
+                const params = new URLSearchParams({
+                    bulan: document.getElementById('bulan').value,
+                    tahun: document.getElementById('tahun').value,
+                });
+                window.location.href = '{{ route("rekap.excel-catat-meter") }}?' + params.toString();
+            });
+        }
+
         const ctx = document.getElementById('chartTren').getContext('2d');
         const chartData = @json($chartData);
 

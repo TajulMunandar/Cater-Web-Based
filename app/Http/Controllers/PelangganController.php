@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pelanggan;
-use App\Models\Wilayah;
+use App\Models\PelangganDetail;
 use App\Models\Golongan;
+use App\Models\Rute;
+use App\Models\Wilayah;
+use App\Models\Petugas;
+use App\Models\KondisiMeter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -35,13 +39,13 @@ class PelangganController extends Controller
     public function data(Request $request)
     {
         try {
-            $pelanggans = Pelanggan::with(['wilayah', 'golongan', 'FotoPelanggan'])
-                ->select(['id', 'no_sambu', 'no_kontrol', 'nama', 'alamat', 'telepon', 'type', 'status', 'id_wilayah', 'id_gol']);
+            $pelanggans = Pelanggan::with(['rute.wilayah', 'golongan', 'FotoPelanggan'])
+                ->select(['id', 'no_sambu', 'nama', 'alamat', 'telepon', 'type', 'status', 'id_rute', 'id_gol']);
 
             return DataTables::of($pelanggans)
                 ->addIndexColumn()
                 ->addColumn('wilayah', function ($row) {
-                    return $row->wilayah ? $row->wilayah->wilayah : '-';
+                    return $row->rute && $row->rute->wilayah ? $row->rute->wilayah->wilayah : '-';
                 })
                 ->addColumn('golongan', function ($row) {
                     return $row->golongan ? $row->golongan->nama : '-';
@@ -113,12 +117,11 @@ class PelangganController extends Controller
     {
         $validated = $request->validate([
             'no_sambu' => 'required|string|max:30|unique:pelanggans,no_sambu',
-            'no_kontrol' => 'required|string|max:50|unique:pelanggans,no_kontrol',
             'nama' => 'required|string|max:100',
             'alamat' => 'required|string',
             'telepon' => 'nullable|string|max:20',
             'type' => 'nullable|string|max:50',
-            'id_wilayah' => 'nullable|exists:wilayahs,id',
+            'id_rute' => 'nullable|exists:rutes,id',
             'id_gol' => 'nullable|exists:golongans,id',
             'status' => ['required', Rule::in(Pelanggan::STATUS_LIST)],
             'lat' => 'nullable|numeric',
@@ -145,11 +148,126 @@ class PelangganController extends Controller
         $page = 'Detail Pelanggan';
 
         // Load relationships
-        $pelanggan->load(['wilayah', 'golongan', 'PelangganDetail.Petugas', 'PelangganDetail.Kondisi', 'PelangganDetail.Wilayah', 'FotoPelanggan']);
+        $pelanggan->load(['rute.wilayah', 'golongan', 'PelangganDetail.Petugas', 'PelangganDetail.Kondisi', 'FotoPelanggan']);
 
         $back_url = session('back_to_pelanggan', route('pelanggan.index'));
+        $golongans = Golongan::orderBy('nama')->get();
+        $rutes = Rute::with('wilayah')->orderBy('rute')->get();
+        $petugasList = Petugas::orderBy('nama')->get();
+        $kondisiList = KondisiMeter::orderBy('kondisi')->get();
 
-        return view('dashboard.pages.pelanggan.show', compact('pelanggan', 'page', 'back_url'));
+        return view('dashboard.pages.pelanggan.show', compact('pelanggan', 'page', 'back_url', 'golongans', 'rutes', 'petugasList', 'kondisiList'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Pelanggan $pelanggan)
+    {
+        $validated = $request->validate([
+            'nama' => 'required|string|max:100',
+            'alamat' => 'required|string',
+            'telepon' => 'nullable|string|max:20',
+            'no_sambu' => ['required', 'string', 'max:30', Rule::unique('pelanggans', 'no_sambu')->ignore($pelanggan->id)],
+            'type' => 'nullable|string|max:50',
+            'id_rute' => 'nullable|exists:rutes,id',
+            'id_gol' => 'nullable|exists:golongans,id',
+            'status' => ['required', Rule::in(Pelanggan::STATUS_LIST)],
+            'lat' => 'nullable|numeric',
+            'long' => 'nullable|numeric',
+            'hapus_foto.*' => 'nullable|exists:foto_pelanggans,id',
+            'foto_pelanggan.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        try {
+            $pelanggan->update($validated);
+
+            // Handle deleted photos
+            if ($request->has('hapus_foto')) {
+                foreach ($validated['hapus_foto'] as $fotoId) {
+                    $foto = $pelanggan->FotoPelanggan()->find($fotoId);
+                    if ($foto) {
+                        Storage::disk('public')->delete($foto->foto);
+                        $foto->delete();
+                    }
+                }
+            }
+
+            // Handle new photo uploads
+            if ($request->hasFile('foto_pelanggan')) {
+                foreach ($request->file('foto_pelanggan') as $foto) {
+                    if ($foto->isValid()) {
+                        $path = $foto->store('pelanggan-foto', 'public');
+                        $pelanggan->FotoPelanggan()->create(['foto' => $path]);
+                    }
+                }
+            }
+
+            $pelanggan->load(['rute.wilayah', 'golongan']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil diperbarui.',
+                'data' => [
+                    'nama' => $pelanggan->nama,
+                    'alamat' => $pelanggan->alamat,
+                    'no_sambu' => $pelanggan->no_sambu,
+                    'telepon' => $pelanggan->telepon,
+                    'type' => $pelanggan->type,
+                    'id_rute' => $pelanggan->id_rute,
+                    'id_gol' => $pelanggan->id_gol,
+                    'status' => $pelanggan->status,
+                    'lat' => $pelanggan->lat,
+                    'long' => $pelanggan->long,
+                    'rute_label' => $pelanggan->rute?->rute . ($pelanggan->rute?->wilayah ? ' - ' . $pelanggan->rute->wilayah->wilayah : ''),
+                    'golongan_label' => $pelanggan->golongan?->nama,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error updating pelanggan: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal memperbarui data.'], 500);
+        }
+    }
+
+    /**
+     * Store operational detail for a customer.
+     */
+    public function storeDetail(Request $request, Pelanggan $pelanggan)
+    {
+        try {
+            $validated = $request->validate([
+                'id_petugas' => 'required|exists:petugas,id',
+                'id_kondisi' => 'required|exists:kondisi_meters,id',
+                'stand_terakhir' => 'required|integer',
+                'ket' => 'nullable|string|max:255',
+                'urutan' => 'required|integer',
+            ]);
+
+            $validated['id_pelanggan'] = $pelanggan->id;
+            $detail = PelangganDetail::updateOrCreate(
+                ['id_pelanggan' => $pelanggan->id],
+                $validated
+            );
+            $detail->load(['Petugas', 'Kondisi']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Data operasional berhasil disimpan.',
+                'data' => [
+                    'id_petugas' => $detail->id_petugas,
+                    'id_kondisi' => $detail->id_kondisi,
+                    'stand_terakhir' => $detail->stand_terakhir,
+                    'ket' => $detail->ket,
+                    'urutan' => $detail->urutan,
+                    'petugas_label' => $detail->Petugas?->nama ?? '-',
+                    'kondisi_label' => $detail->Kondisi?->kondisi ?? '-',
+                ],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Error storing pelanggan detail: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menyimpan data operasional.'], 500);
+        }
     }
 
     /**

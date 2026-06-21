@@ -53,10 +53,6 @@
                             <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
                                 href="/pelanggan/peta"><i class="fas fa-map me-2"></i>Peta Pelanggan</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
-                                aria-current="page" href="/pelanggan/dsml"><i class="fas fa-list me-2"></i>DSML</a>
-                        </li>
                     </ul>
                 </div>
                 <div class="col pt-3 pe-3">
@@ -73,7 +69,6 @@
                             <th>Nama</th>
                             <th>Alamat</th>
                             <th>No Sambung</th>
-                            <th>No Kontrol</th>
                             <th>Golongan</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -137,7 +132,6 @@
                     { data: 'nama', name: 'nama' },
                     { data: 'alamat', name: 'alamat' },
                     { data: 'no_sambu', name: 'no_sambu' },
-                    { data: 'no_kontrol', name: 'no_kontrol' },
                     { data: 'golongan', name: 'golongan' },
                     { data: 'status_badge', name: 'status', searchable: false },
                     { data: 'action', orderable: false, searchable: false }

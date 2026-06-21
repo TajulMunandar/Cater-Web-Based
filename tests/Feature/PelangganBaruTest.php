@@ -6,6 +6,7 @@ use App\Models\Golongan;
 use App\Models\KondisiMeter;
 use App\Models\Pelanggan;
 use App\Models\Petugas;
+use App\Models\Rute;
 use App\Models\User;
 use App\Models\Wilayah;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,6 +20,7 @@ class PelangganBaruTest extends TestCase
 
     private User $user;
     private Wilayah $wilayah;
+    private Rute $rute;
     private Golongan $golongan;
     private Petugas $petugas;
     private KondisiMeter $kondisi;
@@ -37,6 +39,12 @@ class PelangganBaruTest extends TestCase
             'cabang' => 'Cabang Test',
             'center_lat' => '0.0000',
             'center_long' => '0.0000',
+        ]);
+
+        $this->rute = Rute::create([
+            'id_wilayah' => $this->wilayah->id,
+            'rute' => 'Rute Test',
+            'ket' => 'Keterangan Rute',
         ]);
 
         $this->golongan = Golongan::create([
@@ -67,24 +75,20 @@ class PelangganBaruTest extends TestCase
     {
         $response = $this->post(route('pelanggan.baru.store'), [
             'no_sambu' => 'SR-001',
-            'no_kontrol' => 'KR-001',
             'nama' => 'John Doe',
             'alamat' => 'Jl. Test No. 123',
             'telepon' => '08123456789',
             'type' => 'Rumah Tinggal',
-            'id_wilayah' => $this->wilayah->id,
+            'id_rute' => $this->rute->id,
             'id_gol' => $this->golongan->id,
             'status' => Pelanggan::STATUS_AKTIF,
             'lat' => -6.2088,
             'long' => 106.8456,
             'id_petugas' => $this->petugas->id,
-            'rute' => 1,
             'id_kondisi' => $this->kondisi->id,
-            'waktu_catat_meter' => '2026-05-26T10:00',
             'stand_terakhir' => 100,
             'ket' => 'Keterangan test',
             'urutan' => 1,
-            'id_wilayah_detail' => $this->wilayah->id,
         ]);
 
         $response->assertSessionHas('success');
@@ -92,7 +96,6 @@ class PelangganBaruTest extends TestCase
 
         $this->assertDatabaseHas('pelanggans', [
             'no_sambu' => 'SR-001',
-            'no_kontrol' => 'KR-001',
             'nama' => 'John Doe',
         ]);
 
@@ -108,10 +111,9 @@ class PelangganBaruTest extends TestCase
         $response = $this->post(route('pelanggan.baru.store'), []);
 
         $response->assertSessionHasErrors([
-            'no_sambu', 'no_kontrol', 'nama', 'alamat',
-            'status', 'id_petugas', 'rute', 'id_kondisi',
-            'waktu_catat_meter', 'stand_terakhir', 'urutan',
-            'id_wilayah_detail',
+            'no_sambu', 'nama', 'alamat',
+            'status', 'id_petugas', 'id_kondisi',
+            'stand_terakhir', 'urutan',
         ]);
     }
 
@@ -119,7 +121,6 @@ class PelangganBaruTest extends TestCase
     {
         Pelanggan::create([
             'no_sambu' => 'SR-001',
-            'no_kontrol' => 'KR-001',
             'nama' => 'Existing',
             'alamat' => 'Jl. Test',
             'status' => Pelanggan::STATUS_AKTIF,
@@ -127,17 +128,14 @@ class PelangganBaruTest extends TestCase
 
         $response = $this->post(route('pelanggan.baru.store'), [
             'no_sambu' => 'SR-001',
-            'no_kontrol' => 'KR-002',
             'nama' => 'John Doe',
             'alamat' => 'Jl. Test No. 123',
             'status' => Pelanggan::STATUS_AKTIF,
             'id_petugas' => $this->petugas->id,
-            'rute' => 1,
             'id_kondisi' => $this->kondisi->id,
             'waktu_catat_meter' => '2026-05-26T10:00',
             'stand_terakhir' => 100,
             'urutan' => 1,
-            'id_wilayah_detail' => $this->wilayah->id,
         ]);
 
         $response->assertSessionHasErrors(['no_sambu']);
@@ -151,17 +149,13 @@ class PelangganBaruTest extends TestCase
 
         $response = $this->post(route('pelanggan.baru.store'), [
             'no_sambu' => 'SR-002',
-            'no_kontrol' => 'KR-002',
             'nama' => 'Photo Test',
             'alamat' => 'Jl. Foto No. 1',
             'status' => Pelanggan::STATUS_AKTIF,
             'id_petugas' => $this->petugas->id,
-            'rute' => 2,
             'id_kondisi' => $this->kondisi->id,
-            'waktu_catat_meter' => '2026-05-26T10:00',
             'stand_terakhir' => 200,
             'urutan' => 2,
-            'id_wilayah_detail' => $this->wilayah->id,
             'foto_pelanggan' => [$file],
         ]);
 
@@ -179,17 +173,13 @@ class PelangganBaruTest extends TestCase
 
         $response = $this->post(route('pelanggan.baru.store'), [
             'no_sambu' => 'SR-003',
-            'no_kontrol' => 'KR-003',
             'nama' => 'Invalid Photo',
             'alamat' => 'Jl. Salah No. 1',
             'status' => Pelanggan::STATUS_AKTIF,
             'id_petugas' => $this->petugas->id,
-            'rute' => 3,
             'id_kondisi' => $this->kondisi->id,
-            'waktu_catat_meter' => '2026-05-26T10:00',
             'stand_terakhir' => 300,
             'urutan' => 3,
-            'id_wilayah_detail' => $this->wilayah->id,
             'foto_pelanggan' => [$file],
         ]);
 
@@ -200,7 +190,6 @@ class PelangganBaruTest extends TestCase
     {
         $pelanggan = Pelanggan::create([
             'no_sambu' => 'SR-010',
-            'no_kontrol' => 'KR-010',
             'nama' => 'Before Update',
             'alamat' => 'Jl. Lama',
             'status' => Pelanggan::STATUS_AKTIF,
@@ -208,36 +197,30 @@ class PelangganBaruTest extends TestCase
 
         $pelanggan->PelangganDetail()->create([
             'id_petugas' => $this->petugas->id,
-            'rute' => 10,
             'id_kondisi' => $this->kondisi->id,
             'waktu_catat_meter' => now(),
             'stand_terakhir' => 500,
             'urutan' => 10,
-            'id_wilayah' => $this->wilayah->id,
         ]);
 
         $response = $this->put(route('pelanggan.baru.update', $pelanggan->id), [
             'no_sambu' => 'SR-010',
-            'no_kontrol' => 'KR-010',
             'nama' => 'After Update',
             'alamat' => 'Jl. Baru No. 99',
             'telepon' => '08987654321',
-            'id_wilayah' => $this->wilayah->id,
+            'id_rute' => $this->rute->id,
             'id_gol' => $this->golongan->id,
             'status' => Pelanggan::STATUS_NON_AKTIF,
             'lat' => -6.2000,
             'long' => 106.8000,
             'id_petugas' => $this->petugas->id,
-            'rute' => 10,
             'id_kondisi' => $this->kondisi->id,
-            'waktu_catat_meter' => '2026-05-26T10:00',
             'stand_terakhir' => 600,
             'ket' => 'Diperbarui',
             'urutan' => 10,
-            'id_wilayah_detail' => $this->wilayah->id,
         ]);
 
-        $response->assertSessionHas('update');
+        $response->assertSessionHas('success');
         $response->assertRedirect(route('pelanggan.baru.index'));
 
         $this->assertDatabaseHas('pelanggans', [
@@ -259,7 +242,6 @@ class PelangganBaruTest extends TestCase
 
         $pelanggan = Pelanggan::create([
             'no_sambu' => 'SR-020',
-            'no_kontrol' => 'KR-020',
             'nama' => 'To Delete',
             'alamat' => 'Jl. Hapus',
             'status' => Pelanggan::STATUS_AKTIF,
@@ -271,12 +253,10 @@ class PelangganBaruTest extends TestCase
 
         $pelanggan->PelangganDetail()->create([
             'id_petugas' => $this->petugas->id,
-            'rute' => 20,
             'id_kondisi' => $this->kondisi->id,
             'waktu_catat_meter' => now(),
             'stand_terakhir' => 700,
             'urutan' => 20,
-            'id_wilayah' => $this->wilayah->id,
         ]);
 
         $response = $this->delete(route('pelanggan.baru.destroy', $pelanggan->id));

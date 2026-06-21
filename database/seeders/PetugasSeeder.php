@@ -4,35 +4,78 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Faker\Factory as Faker;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class PetugasSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $faker = Faker::create('id_ID'); // Menggunakan locale Indonesia untuk data yang lebih relevan
+        $json = File::get(database_path('../petugas.md'));
 
-        // Generate 10.000 data petugas
-        foreach (range(1, 10000) as $index) {
-            DB::table('petugas')->insert([
-                'photo' => $faker->imageUrl(640, 480, 'people', true), // Generate URL foto palsu
-                'nama' => $faker->name,
-                'nip' => $faker->unique()->numerify('NIP##########'), // Generate NIP acak
-                'no_hp1' => $faker->phoneNumber,
-                'no_hp2' => $faker->optional()->phoneNumber, // no_hp2 optional
-                'email' => $faker->unique()->safeEmail,
-                'username' => $faker->unique()->userName,
-                'password' => bcrypt('password123'), // Default password untuk semua user
-                'tipe_pekerjaan' => $faker->word,
-                'level' => $faker->randomElement([1, 2, 3]), // Misalnya level 1, 2, 3
-                'jenis_pekerjaan' => $faker->word,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        $json = preg_replace('/\]\s*\[/', ',', trim($json));
+
+        $data = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->command->error('JSON decode error: ' . json_last_error_msg());
+            return;
         }
+
+        $inserted = 0;
+
+        DB::transaction(function () use ($data, &$inserted) {
+            foreach ($data as $item) {
+                $username = $item['username'];
+                $password = Str::lower(str_replace(' ', '', $username));
+
+                $nip = !empty($item['nip']) ? $item['nip'] : 'ID-P' . $item['id_petugas'];
+
+                $tipePekerjaan = $item['jenisPekerjaan'] === 'ADMIN' ? 'KANTOR' : 'LAPANGAN';
+                $level = $item['jenisPekerjaan'] === 'ADMIN' ? 1 : 2;
+
+                $existingUser = DB::table('users')
+                    ->where('email', $item['email'])
+                    ->orWhere('username', $username)
+                    ->first();
+
+                if ($existingUser) {
+                    $userId = $existingUser->id;
+                } else {
+                    $userId = DB::table('users')->insertGetId([
+                        'name' => $item['nama'],
+                        'username' => $username,
+                        'email' => $item['email'],
+                        'password' => bcrypt($password),
+                        'level' => $level,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                $existingPetugas = DB::table('petugas')->find($item['id_petugas']);
+
+                if (!$existingPetugas) {
+                    DB::table('petugas')->insert([
+                        'id' => $item['id_petugas'],
+                        'photo' => null,
+                        'nama' => $item['nama'],
+                        'nip' => $nip,
+                        'no_hp1' => Str::substr($item['noHp'], 0, 13),
+                        'no_hp2' => null,
+                        'tipe_pekerjaan' => $tipePekerjaan,
+                        'level' => $level,
+                        'jenis_pekerjaan' => $item['jenisPekerjaan'],
+                        'user_id' => $userId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $inserted++;
+                }
+            }
+        });
+
+        $this->command->info('Successfully seeded ' . $inserted . ' petugas with user accounts.');
     }
 }

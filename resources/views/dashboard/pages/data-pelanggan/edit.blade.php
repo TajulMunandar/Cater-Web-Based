@@ -74,12 +74,6 @@
                           </div>
                           <div class="col-md-6">
                               <div class="mb-3">
-                                  <label class="form-label">No Kontrol</label>
-                                  <input type="text" name="no_kontrol" class="form-control" placeholder="No Kontrol" value="{{ old('no_kontrol', $pelanggan->no_kontrol) }}" required />
-                              </div>
-                          </div>
-                          <div class="col-md-6">
-                              <div class="mb-3">
                                   <label class="form-label">No Telepon</label>
                                   <input type="text" name="telepon" class="form-control" placeholder="No Telepon" value="{{ old('telepon', $pelanggan->telepon) }}" />
                               </div>
@@ -107,17 +101,11 @@
                                   </select>
                               </div>
                           </div>
-                          <div class="col-md-6">
-                              <div class="mb-3">
-                                  <label class="form-label">Rute</label>
-                                  <input type="text" name="rute" class="form-control" value="{{ old('rute', $detail?->rute) }}" required />
-                              </div>
-                          </div>
-                      </div>
-                      <div class="row">
-                          <div class="col-md-6">
-                              <div class="mb-3">
-                                  <label class="form-label">Kondisi Meter</label>
+                       </div>
+                       <div class="row">
+                           <div class="col-md-6">
+                               <div class="mb-3">
+                                   <label class="form-label">Kondisi Meter</label>
                                   <select class="form-select" name="id_kondisi">
                                       <option value="">--Pilih Kondisi Meter--</option>
                                       @foreach ($kondisis as $kondisi)
@@ -126,18 +114,9 @@
                                   </select>
                               </div>
                           </div>
-                          <div class="col-md-6">
-                              <div class="mb-3">
-                                  <label class="form-label">Waktu Catat Meter</label>
-                                  <input type="datetime-local" name="waktu_catat_meter" class="form-control" value="{{ old('waktu_catat_meter', $detail?->waktu_catat_meter?->setTimezone('Asia/Jakarta')->format('Y-m-d\TH:i') ?? '') }}" required />
-                                  <small class="text-muted">WIB</small>
-                              </div>
-                          </div>
-                      </div>
-                      <div class="row">
-                          <div class="col-md-6">
-                              <div class="mb-3">
-                                  <label class="form-label">Stand Terakhir</label>
+                           <div class="col-md-6">
+                               <div class="mb-3">
+                                   <label class="form-label">Stand Terakhir</label>
                                   <input type="text" name="stand_terakhir" class="form-control" value="{{ old('stand_terakhir', $detail?->stand_terakhir) }}" required />
                               </div>
                           </div>
@@ -157,11 +136,11 @@
                      <div class="row">
                           <div class="col-md-6">
                               <div class="mb-3">
-                                  <label class="form-label">Wilayah Domisili</label>
-                                  <select class="form-select" name="id_wilayah">
-                                      <option value="">--Pilih Wilayah Domisili--</option>
-                                      @foreach ($wilayahs as $wilayah)
-                                          <option value="{{ $wilayah->id }}" {{ old('id_wilayah', $pelanggan->id_wilayah) == $wilayah->id ? 'selected' : '' }}>{{ $wilayah->wilayah }}</option>
+                                  <label class="form-label">Rute</label>
+                                  <select class="form-select" name="id_rute">
+                                      <option value="">--Pilih Rute--</option>
+                                      @foreach ($rutes as $rute)
+                                          <option value="{{ $rute->id }}" {{ old('id_rute', $pelanggan->id_rute) == $rute->id ? 'selected' : '' }}>{{ $rute->rute }} ({{ $rute->wilayah?->wilayah ?? '-' }})</option>
                                       @endforeach
                                   </select>
                               </div>
@@ -186,20 +165,9 @@
                                   </select>
                               </div>
                           </div>
-                          <div class="col-md-6">
-                              <div class="mb-3">
-                                  <label class="form-label">Wilayah Operasional</label>
-                                  <select class="form-select" name="id_wilayah_detail">
-                                      <option value="">--Pilih Wilayah Operasional--</option>
-                                      @foreach ($wilayahs as $wilayah)
-                                          <option value="{{ $wilayah->id }}" {{ old('id_wilayah_detail', $detail?->id_wilayah) == $wilayah->id ? 'selected' : '' }}>{{ $wilayah->wilayah }}</option>
-                                      @endforeach
-                                  </select>
-                              </div>
-                          </div>
-                          <div class="col-md-6">
-                              <div class="mb-3">
-                                  <label class="form-label">Lokasi (Klik pada peta atau seret marker untuk mengubah)</label>
+                           <div class="col-md-6">
+                               <div class="mb-3">
+                                   <label class="form-label">Lokasi (Klik pada peta atau seret marker untuk mengubah)</label>
                                   <div id="map" style="height: 300px;"></div>
                               </div>
                           </div>

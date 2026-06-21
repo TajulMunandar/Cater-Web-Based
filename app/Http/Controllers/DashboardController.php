@@ -43,14 +43,15 @@ class DashboardController extends Controller
         });
 
         $distribusiWilayah = Cache::remember('dashboard_wilayah', 3600, function () {
-            return Pelanggan::selectRaw('id_wilayah, COUNT(*) as total')
-                ->with('wilayah:id,wilayah')
-                ->groupBy('id_wilayah')
+            return Pelanggan::select('id', 'id_rute')
+                ->with('rute.wilayah:id,wilayah')
                 ->get()
-                ->map(fn($row) => [
-                    'wilayah' => $row->wilayah?->wilayah ?? 'Tidak Diketahui',
-                    'total' => (int) $row->total,
-                ]);
+                ->groupBy(fn($row) => $row->rute?->wilayah?->wilayah ?? 'Tidak Diketahui')
+                ->map(fn($group, $wilayah) => [
+                    'wilayah' => $wilayah,
+                    'total' => $group->count(),
+                ])
+                ->values();
         });
 
         $distribusiGolongan = Pelanggan::selectRaw('id_gol, COUNT(*) as total')
@@ -64,12 +65,12 @@ class DashboardController extends Controller
             ]);
 
         $koordinatPelanggan = Cache::remember('dashboard_koordinat', 600, function () {
-            return Pelanggan::select('id', 'nama', 'alamat', 'lat', 'long', 'status', 'id_wilayah')
+            return Pelanggan::select('id', 'nama', 'alamat', 'lat', 'long', 'status', 'id_rute')
                 ->whereNotNull('lat')
                 ->whereNotNull('long')
                 ->where('lat', '!=', 0)
                 ->where('long', '!=', 0)
-                ->with('wilayah:id,wilayah')
+                ->with('rute.wilayah:id,wilayah')
                 ->get()
                 ->map(fn($p) => [
                     'id' => $p->id,
@@ -78,15 +79,15 @@ class DashboardController extends Controller
                     'lat' => (float) $p->lat,
                     'long' => (float) $p->long,
                     'status' => $p->status,
-                    'wilayah' => $p->wilayah?->wilayah ?? '-',
+                    'wilayah' => $p->rute?->wilayah?->wilayah ?? '-',
                     'url' => route('pelanggan.show', $p->id),
                 ]);
         });
 
-        $aktivitasTerbaru = Pelanggan::with(['wilayah:id,wilayah', 'golongan:id,nama'])
+        $aktivitasTerbaru = Pelanggan::with(['rute.wilayah:id,wilayah', 'golongan:id,nama'])
             ->latest()
             ->limit(10)
-            ->get(['id', 'nama', 'alamat', 'status', 'id_wilayah', 'id_gol', 'created_at']);
+            ->get(['id', 'nama', 'alamat', 'status', 'id_rute', 'id_gol', 'created_at']);
 
         $pencatatanBulanIni = Cache::remember('dashboard_pencatatan', 3600, function () {
             $totalAktif = Pelanggan::where('status', Pelanggan::STATUS_AKTIF)->count();

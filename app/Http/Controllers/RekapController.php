@@ -165,18 +165,19 @@ class RekapController extends Controller
 
         $daysInMonth = Carbon::create((int)$tahun, (int)$bulan)->daysInMonth;
 
-        $semuaWilayah = Wilayah::orderBy('kode')->get();
+        $semuaWilayah = Wilayah::orderBy('wilayah')->get();
 
         $rawData = CatatMeter::selectRaw('
-                p.id_wilayah,
+                r.id_wilayah,
                 DAY(cm.waktu) as hari,
                 COUNT(DISTINCT cm.id_pelanggan) as total
             ')
             ->from('catat_meters as cm')
             ->join('pelanggans as p', 'cm.id_pelanggan', '=', 'p.id')
+            ->join('rutes as r', 'p.id_rute', '=', 'r.id')
             ->whereYear('cm.waktu', $tahun)
             ->whereMonth('cm.waktu', $bulan)
-            ->groupBy('p.id_wilayah', DB::raw('DAY(cm.waktu)'))
+            ->groupBy('r.id_wilayah', DB::raw('DAY(cm.waktu)'))
             ->get();
 
         $matrix = [];
@@ -237,7 +238,7 @@ class RekapController extends Controller
             $query->whereDate('waktu', '<=', $request->tanggal_akhir);
         }
         if ($request->filled('id_wilayah')) {
-            $query->whereHas('Pelanggan', function ($q) use ($request) {
+            $query->whereHas('Pelanggan.rute', function ($q) use ($request) {
                 $q->where('id_wilayah', $request->id_wilayah);
             });
         }
@@ -269,7 +270,8 @@ class RekapController extends Controller
         }
         if ($request->filled('id_wilayah')) {
             $totalAllQuery->join('pelanggans as p', 'cm.id_pelanggan', '=', 'p.id')
-                ->where('p.id_wilayah', $request->id_wilayah);
+                ->join('rutes as r', 'p.id_rute', '=', 'r.id')
+                ->where('r.id_wilayah', $request->id_wilayah);
         }
 
         $totalAll = $totalAllQuery->count();
@@ -290,7 +292,8 @@ class RekapController extends Controller
         }
         if ($request->filled('id_wilayah')) {
             $query->join('pelanggans as p', 'cm.id_pelanggan', '=', 'p.id')
-                ->where('p.id_wilayah', $request->id_wilayah);
+                ->join('rutes as r', 'p.id_rute', '=', 'r.id')
+                ->where('r.id_wilayah', $request->id_wilayah);
         }
 
         $query->groupBy('km.id', 'km.kondisi');
@@ -323,7 +326,8 @@ class RekapController extends Controller
         ')
             ->from('catat_meters as cm')
             ->join('pelanggans as p', 'cm.id_pelanggan', '=', 'p.id')
-            ->join('wilayahs as w', 'p.id_wilayah', '=', 'w.id')
+            ->join('rutes as r', 'p.id_rute', '=', 'r.id')
+            ->join('wilayahs as w', 'r.id_wilayah', '=', 'w.id')
             ->join('kondisi_meters as km', 'cm.id_kondisi', '=', 'km.id');
 
         if ($request->filled('tanggal_awal')) {
@@ -342,6 +346,243 @@ class RekapController extends Controller
         return DataTables::of($query)
             ->addIndexColumn()
             ->make(true);
+    }
+
+    public function excelCatatMeter(Request $request)
+    {
+        $bulan = $request->input('bulan', now()->format('m'));
+        $tahun = $request->input('tahun', now()->format('Y'));
+
+        $daysInMonth = Carbon::create((int)$tahun, (int)$bulan)->daysInMonth;
+
+        $petugas = Petugas::whereHas('CatatMeter', function ($q) use ($bulan, $tahun) {
+            $q->whereYear('waktu', $tahun)->whereMonth('waktu', $bulan);
+        })->orderBy('nama')->get();
+
+        $rawData = CatatMeter::selectRaw('
+                DAY(waktu) as hari,
+                id_petugas,
+                COUNT(*) as total
+            ')
+            ->whereYear('waktu', $tahun)
+            ->whereMonth('waktu', $bulan)
+            ->groupBy('hari', 'id_petugas')
+            ->get();
+
+        $matrix = [];
+        $petugasTotals = [];
+        foreach ($rawData as $row) {
+            $matrix[$row->id_petugas][$row->hari] = $row->total;
+            $petugasTotals[$row->id_petugas] = ($petugasTotals[$row->id_petugas] ?? 0) + $row->total;
+        }
+
+        $dayTotals = [];
+        foreach (range(1, $daysInMonth) as $day) {
+            $total = 0;
+            foreach ($petugas as $p) {
+                $total += $matrix[$p->id][$day] ?? 0;
+            }
+            $dayTotals[$day] = $total;
+        }
+
+        $grandTotal = array_sum($dayTotals);
+
+        $filename = 'rekap-catat-meter-' . $tahun . '-' . $bulan . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function () use ($petugas, $daysInMonth, $matrix, $petugasTotals, $dayTotals, $grandTotal) {
+            $handle = fopen('php://output', 'w');
+
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            $headerRow = ['Nama Petugas'];
+            foreach (range(1, $daysInMonth) as $day) {
+                $headerRow[] = sprintf('%02d', $day);
+            }
+            $headerRow[] = 'Total';
+            fputcsv($handle, $headerRow);
+
+            foreach ($petugas as $p) {
+                $row = [$p->nama];
+                foreach (range(1, $daysInMonth) as $day) {
+                    $row[] = $matrix[$p->id][$day] ?? 0;
+                }
+                $row[] = $petugasTotals[$p->id] ?? 0;
+                fputcsv($handle, $row);
+            }
+
+            $footerRow = ['Total'];
+            foreach (range(1, $daysInMonth) as $day) {
+                $footerRow[] = $dayTotals[$day] ?? 0;
+            }
+            $footerRow[] = $grandTotal;
+            fputcsv($handle, $footerRow);
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function excelKondisi(Request $request)
+    {
+        $bulan = $request->input('bulan', now()->format('m'));
+        $tahun = $request->input('tahun', now()->format('Y'));
+
+        $kondisiList = KondisiMeter::orderBy('kondisi')->get();
+        $petugas = Petugas::whereHas('CatatMeter', function ($q) use ($bulan, $tahun) {
+            $q->whereYear('waktu', $tahun)->whereMonth('waktu', $bulan);
+        })->orderBy('nama')->get();
+
+        $rawData = CatatMeter::selectRaw('
+                id_petugas,
+                id_kondisi,
+                COUNT(*) as total
+            ')
+            ->whereYear('waktu', $tahun)
+            ->whereMonth('waktu', $bulan)
+            ->groupBy('id_petugas', 'id_kondisi')
+            ->get();
+
+        $matrix = [];
+        $petugasTotals = [];
+        foreach ($rawData as $row) {
+            $matrix[$row->id_petugas][$row->id_kondisi] = (int)$row->total;
+            $petugasTotals[$row->id_petugas] = ($petugasTotals[$row->id_petugas] ?? 0) + (int)$row->total;
+        }
+
+        $kondisiTotals = [];
+        foreach ($kondisiList as $k) {
+            $total = 0;
+            foreach ($petugas as $p) {
+                $total += $matrix[$p->id][$k->id] ?? 0;
+            }
+            $kondisiTotals[$k->id] = $total;
+        }
+
+        $grandTotal = array_sum($kondisiTotals);
+
+        $filename = 'rekap-kondisi-' . $tahun . '-' . $bulan . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function () use ($petugas, $kondisiList, $matrix, $petugasTotals, $kondisiTotals, $grandTotal) {
+            $handle = fopen('php://output', 'w');
+
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            $headerRow = ['Nama Petugas'];
+            foreach ($kondisiList as $k) {
+                $headerRow[] = $k->kondisi;
+            }
+            $headerRow[] = 'Total';
+            fputcsv($handle, $headerRow);
+
+            foreach ($petugas as $p) {
+                $row = [$p->nama];
+                foreach ($kondisiList as $k) {
+                    $row[] = $matrix[$p->id][$k->id] ?? 0;
+                }
+                $row[] = $petugasTotals[$p->id] ?? 0;
+                fputcsv($handle, $row);
+            }
+
+            $footerRow = ['Total'];
+            foreach ($kondisiList as $k) {
+                $footerRow[] = $kondisiTotals[$k->id] ?? 0;
+            }
+            $footerRow[] = $grandTotal;
+            fputcsv($handle, $footerRow);
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function excelWilayah(Request $request)
+    {
+        $bulan = $request->input('bulan', now()->format('m'));
+        $tahun = $request->input('tahun', now()->format('Y'));
+
+        $daysInMonth = Carbon::create((int)$tahun, (int)$bulan)->daysInMonth;
+
+        $semuaWilayah = Wilayah::orderBy('wilayah')->get();
+
+        $rawData = CatatMeter::selectRaw('
+                r.id_wilayah,
+                DAY(cm.waktu) as hari,
+                COUNT(DISTINCT cm.id_pelanggan) as total
+            ')
+            ->from('catat_meters as cm')
+            ->join('pelanggans as p', 'cm.id_pelanggan', '=', 'p.id')
+            ->join('rutes as r', 'p.id_rute', '=', 'r.id')
+            ->whereYear('cm.waktu', $tahun)
+            ->whereMonth('cm.waktu', $bulan)
+            ->groupBy('r.id_wilayah', DB::raw('DAY(cm.waktu)'))
+            ->get();
+
+        $matrix = [];
+        $wilayahTotals = [];
+        foreach ($rawData as $row) {
+            $matrix[$row->id_wilayah][$row->hari] = (int)$row->total;
+            $wilayahTotals[$row->id_wilayah] = ($wilayahTotals[$row->id_wilayah] ?? 0) + (int)$row->total;
+        }
+
+        $dayTotals = [];
+        foreach (range(1, $daysInMonth) as $day) {
+            $total = 0;
+            foreach ($semuaWilayah as $w) {
+                $total += $matrix[$w->id][$day] ?? 0;
+            }
+            $dayTotals[$day] = $total;
+        }
+
+        $grandTotal = array_sum($dayTotals);
+
+        $filename = 'rekap-wilayah-' . $tahun . '-' . $bulan . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function () use ($semuaWilayah, $daysInMonth, $matrix, $wilayahTotals, $dayTotals, $grandTotal) {
+            $handle = fopen('php://output', 'w');
+
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            $headerRow = ['Nama Wilayah'];
+            foreach (range(1, $daysInMonth) as $day) {
+                $headerRow[] = sprintf('%02d', $day);
+            }
+            $headerRow[] = 'Total';
+            fputcsv($handle, $headerRow);
+
+            foreach ($semuaWilayah as $w) {
+                $row = [$w->wilayah];
+                foreach (range(1, $daysInMonth) as $day) {
+                    $row[] = $matrix[$w->id][$day] ?? 0;
+                }
+                $row[] = $wilayahTotals[$w->id] ?? 0;
+                fputcsv($handle, $row);
+            }
+
+            $footerRow = ['', 'Total'];
+            foreach (range(1, $daysInMonth) as $day) {
+                $footerRow[] = $dayTotals[$day] ?? 0;
+            }
+            $footerRow[] = $grandTotal;
+            fputcsv($handle, $footerRow);
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function store(Request $request)

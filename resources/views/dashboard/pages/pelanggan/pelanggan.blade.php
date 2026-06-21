@@ -53,10 +53,6 @@
                             <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
                                 href="/pelanggan/peta"><i class="fas fa-map me-2"></i>Peta Pelanggan</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-3"
-                                aria-current="page" href="/pelanggan/dsml"><i class="fas fa-list me-2"></i>DSML</a>
-                        </li>
                     </ul>
                 </div>
                 <div class="col pt-3 pe-3">
@@ -65,7 +61,6 @@
             </div>
 
             <div class="card-body">
-                <div class="table-responsive">
                 <table class="table" id="myTable" style="width:100%;">
                     <thead>
                         <tr>
@@ -74,7 +69,6 @@
                             <th>Nama</th>
                             <th>Alamat</th>
                             <th>No Sambu</th>
-                            <th>No Kontrol</th>
                             <th>Wilayah</th>
                             <th>Golongan</th>
                             <th>Status</th>
@@ -82,7 +76,6 @@
                         </tr>
                     </thead>
                 </table>
-                </div>
             </div>
         </div>
     </div>
@@ -130,12 +123,6 @@
                                             <div class="p-3 rounded-3" style="background:#f8fafc;">
                                                 <small class="text-muted text-uppercase fw-semibold" style="font-size:10px;letter-spacing:0.5px;">No Sambu</small>
                                                 <p class="mb-0 fw-bold mt-1" id="detail-no-sambu" style="font-size:15px;">-</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="p-3 rounded-3" style="background:#f8fafc;">
-                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:10px;letter-spacing:0.5px;">No Kontrol</small>
-                                                <p class="mb-0 fw-bold mt-1" id="detail-no-kontrol" style="font-size:15px;">-</p>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
@@ -263,7 +250,6 @@
                     { data: 'nama', name: 'nama' },
                     { data: 'alamat', name: 'alamat' },
                     { data: 'no_sambu', name: 'no_sambu' },
-                    { data: 'no_kontrol', name: 'no_kontrol' },
                     { data: 'wilayah', name: 'wilayah' },
                     { data: 'golongan', name: 'golongan' },
                     { data: 'status_badge', name: 'status', searchable: false },
@@ -285,7 +271,6 @@
                 if (data) {
                     // Populate modal with customer data
                     $('#detail-no-sambu').text(data.no_sambu || '-');
-                    $('#detail-no-kontrol').text(data.no_kontrol || '-');
                     $('#detail-nama').text(data.nama || '-');
                     $('#detail-telepon').text(data.telepon || '-');
                     $('#detail-alamat').text(data.alamat || '-');

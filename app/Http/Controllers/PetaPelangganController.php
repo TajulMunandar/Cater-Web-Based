@@ -35,10 +35,12 @@ class PetaPelangganController extends Controller
         try {
             $query = Pelanggan::whereNotNull('lat')
                 ->whereNotNull('long')
-                ->with(['wilayah', 'golongan']);
+                ->with(['rute.wilayah', 'golongan']);
 
             if ($request->has('wilayah') && $request->wilayah) {
-                $query->where('id_wilayah', $request->wilayah);
+                $query->whereHas('rute', function ($q) use ($request) {
+                    $q->where('id_wilayah', $request->wilayah);
+                });
             }
 
             $pelanggans = $query->get();

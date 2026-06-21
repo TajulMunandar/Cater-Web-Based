@@ -24,7 +24,7 @@ class CatatMeterController extends Controller
 
     public function data(Request $request)
     {
-        $catatMeter = CatatMeter::with(['Pelanggan.wilayah', 'Petugas', 'KondisiMeter', 'FotoCater'])
+        $catatMeter = CatatMeter::with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter', 'FotoCater'])
             ->select(['id', 'id_pelanggan', 'id_petugas', 'id_kondisi', 'waktu', 'stand', 'gps', 'status']);
 
         if ($request->filled('id_petugas')) {
@@ -34,7 +34,7 @@ class CatatMeterController extends Controller
             $catatMeter->where('id_kondisi', $request->id_kondisi);
         }
         if ($request->filled('id_wilayah')) {
-            $catatMeter->whereHas('Pelanggan', function ($q) use ($request) {
+            $catatMeter->whereHas('Pelanggan.rute', function ($q) use ($request) {
                 $q->where('id_wilayah', $request->id_wilayah);
             });
         }
@@ -49,8 +49,6 @@ class CatatMeterController extends Controller
             $catatMeter->where(function ($q) use ($search) {
                 $q->whereHas('Pelanggan', function ($q2) use ($search) {
                     $q2->where('nama', 'like', "%$search%")
-                        ->orWhere('no_kontrol', 'like', "%$search%")
-                        ->orWhere('no_sambu', 'like', "%$search%")
                         ->orWhere('alamat', 'like', "%$search%");
                 })->orWhere('stand', 'like', "%$search%");
             });
@@ -81,14 +79,8 @@ class CatatMeterController extends Controller
             ->addColumn('nama', function ($row) {
                 return $row->Pelanggan ? $row->Pelanggan->nama : '';
             })
-            ->addColumn('no_kontrol', function ($row) {
-                return $row->Pelanggan ? $row->Pelanggan->no_kontrol : '';
-            })
-            ->addColumn('no_sambung', function ($row) {
-                return $row->Pelanggan ? $row->Pelanggan->no_sambu : '';
-            })
             ->addColumn('wilayah', function ($row) {
-                return $row->Pelanggan && $row->Pelanggan->wilayah ? $row->Pelanggan->wilayah->wilayah : '';
+                return $row->Pelanggan && $row->Pelanggan->rute && $row->Pelanggan->rute->wilayah ? $row->Pelanggan->rute->wilayah->wilayah : '';
             })
             ->addColumn('kondisi_badge', function ($row) {
                 $nama = $row->KondisiMeter ? $row->KondisiMeter->kondisi : '';
@@ -122,7 +114,7 @@ class CatatMeterController extends Controller
 
     public function dataTidakTerdaftar(Request $request)
     {
-        $catatMeter = CatatMeter::with(['Pelanggan', 'Petugas', 'KondisiMeter', 'FotoCater'])
+        $catatMeter = CatatMeter::with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter', 'FotoCater'])
             ->select(['id', 'id_pelanggan', 'id_petugas', 'id_kondisi', 'waktu', 'stand', 'gps', 'status'])
             ->latest();
 
@@ -131,14 +123,8 @@ class CatatMeterController extends Controller
             ->addColumn('pelanggan', function ($row) {
                 return $row->Pelanggan ? $row->Pelanggan->nama : '';
             })
-            ->addColumn('no_kontrol', function ($row) {
-                return $row->Pelanggan ? $row->Pelanggan->no_kontrol : '';
-            })
-            ->addColumn('no_sambung', function ($row) {
-                return $row->Pelanggan ? $row->Pelanggan->no_sambu : '';
-            })
             ->addColumn('wilayah', function ($row) {
-                return $row->Pelanggan && $row->Pelanggan->wilayah ? $row->Pelanggan->wilayah->wilayah : '';
+                return $row->Pelanggan && $row->Pelanggan->rute && $row->Pelanggan->rute->wilayah ? $row->Pelanggan->rute->wilayah->wilayah : '';
             })
             ->addColumn('kondisi', function ($row) {
                 return $row->KondisiMeter ? $row->KondisiMeter->kondisi : '';
@@ -165,14 +151,14 @@ class CatatMeterController extends Controller
 
     public function dataUrutan(Request $request)
     {
-        $pelanggan = Pelanggan::with(['wilayah'])
-            ->select(['id', 'nama', 'no_sambu', 'no_kontrol', 'alamat', 'id_wilayah'])
+        $pelanggan = Pelanggan::with(['rute.wilayah'])
+            ->select(['id', 'nama', 'alamat', 'id_rute'])
             ->orderBy('nama');
 
         return DataTables::of($pelanggan)
             ->addIndexColumn()
             ->addColumn('wilayah', function ($row) {
-                return $row->wilayah ? $row->wilayah->wilayah : '';
+                return $row->rute && $row->rute->wilayah ? $row->rute->wilayah->wilayah : '';
             })
             ->addColumn('action', function ($row) {
                 return '<button class="btn btn-primary btn-sm" onclick="window.location.href=\'/cater?pelanggan=' . $row->id . '\'"><i class="fas fa-eye"></i> Catat</button>';
@@ -211,7 +197,7 @@ class CatatMeterController extends Controller
 
     public function show(string $id)
     {
-        $catatMeter = CatatMeter::with(['Pelanggan.wilayah', 'Petugas', 'KondisiMeter', 'FotoCater'])->findOrFail($id);
+        $catatMeter = CatatMeter::with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter', 'FotoCater'])->findOrFail($id);
         $data = $catatMeter->toArray();
         $pel = $catatMeter->Pelanggan;
         $foto = $catatMeter->FotoCater->first();
@@ -219,9 +205,7 @@ class CatatMeterController extends Controller
         $data['nama'] = $pel ? $pel->nama : '';
         $data['alamat'] = $pel ? $pel->alamat : '';
         $data['telepon'] = $pel ? $pel->telepon : '';
-        $data['no_sambu'] = $pel ? $pel->no_sambu : '';
-        $data['no_kontrol'] = $pel ? $pel->no_kontrol : '';
-        $data['wilayah'] = $pel && $pel->wilayah ? $pel->wilayah->wilayah : '';
+        $data['wilayah'] = $pel && $pel->rute && $pel->rute->wilayah ? $pel->rute->wilayah->wilayah : '';
         $data['kondisi_nama'] = $catatMeter->KondisiMeter ? $catatMeter->KondisiMeter->kondisi : '';
         $data['petugas_nama'] = $catatMeter->Petugas ? $catatMeter->Petugas->nama : '';
         $data['foto_url'] = $foto ? asset('storage/' . $foto->foto) : null;
@@ -287,7 +271,7 @@ class CatatMeterController extends Controller
 
     public function excel(Request $request)
     {
-        $catatMeter = CatatMeter::with(['Pelanggan.wilayah', 'Petugas', 'KondisiMeter'])
+        $catatMeter = CatatMeter::with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter'])
             ->select(['id', 'id_pelanggan', 'id_petugas', 'id_kondisi', 'waktu', 'stand', 'gps', 'status']);
 
         if ($request->filled('id_petugas')) {
@@ -297,7 +281,7 @@ class CatatMeterController extends Controller
             $catatMeter->where('id_kondisi', $request->id_kondisi);
         }
         if ($request->filled('id_wilayah')) {
-            $catatMeter->whereHas('Pelanggan', function ($q) use ($request) {
+            $catatMeter->whereHas('Pelanggan.rute', function ($q) use ($request) {
                 $q->where('id_wilayah', $request->id_wilayah);
             });
         }
@@ -312,8 +296,6 @@ class CatatMeterController extends Controller
             $catatMeter->where(function ($q) use ($search) {
                 $q->whereHas('Pelanggan', function ($q2) use ($search) {
                     $q2->where('nama', 'like', "%$search%")
-                        ->orWhere('no_kontrol', 'like', "%$search%")
-                        ->orWhere('no_sambu', 'like', "%$search%")
                         ->orWhere('alamat', 'like', "%$search%");
                 })->orWhere('stand', 'like', "%$search%");
             });
@@ -330,7 +312,7 @@ class CatatMeterController extends Controller
 
         $callback = function () use ($data) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['No', 'Nama', 'No Kontrol', 'No Sambung', 'Wilayah', 'Stand Meter', 'Waktu', 'Kondisi Meter', 'Petugas', 'GPS', 'Status']);
+            fputcsv($handle, ['No', 'Nama', 'Wilayah', 'Stand Meter', 'Waktu', 'Kondisi Meter', 'Petugas', 'GPS', 'Status']);
 
             $no = 1;
             foreach ($data as $row) {
@@ -338,9 +320,7 @@ class CatatMeterController extends Controller
                 fputcsv($handle, [
                     $no++,
                     $pel ? $pel->nama : '',
-                    $pel ? $pel->no_kontrol : '',
-                    $pel ? $pel->no_sambu : '',
-                    $pel && $pel->wilayah ? $pel->wilayah->wilayah : '',
+                    $pel && $pel->rute && $pel->rute->wilayah ? $pel->rute->wilayah->wilayah : '',
                     $row->stand,
                     $row->waktu ? date('d/m/Y H:i', strtotime($row->waktu)) : '',
                     $row->KondisiMeter ? $row->KondisiMeter->kondisi : '',
