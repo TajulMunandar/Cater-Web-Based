@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('kondisi_meters', function (Blueprint $table) {
             $table->id();
-            $table->string('kondisi', 20);
+            $table->string('kondisi', 30);
             $table->string('keterangan', 50);
             $table->string('kode', 20);
             $table->timestamps();
