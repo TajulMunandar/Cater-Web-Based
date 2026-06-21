@@ -19,10 +19,5 @@ class DatabaseSeeder extends Seeder
             PetugasSeeder::class,
             WilayahSeeder::class,
         ]);
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
     }
 }
