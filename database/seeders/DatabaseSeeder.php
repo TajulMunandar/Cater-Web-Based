@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             KondisiMeterSeeder::class,
             PetugasSeeder::class,
             WilayahSeeder::class,
+            PelangganCsvSeeder::class,
         ]);
     }
 }

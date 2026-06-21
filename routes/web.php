@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
     // Main dashboard route
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard')->middleware('role:admin');
     Route::get('/dashboard/notifikasi', [DashboardController::class, 'notifikasi'])->name('dashboard.notifikasi');
+    Route::get('/dashboard/koordinat', [DashboardController::class, 'getKoordinat'])->name('dashboard.koordinat');
     Route::post('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
 
     // Profile routes
