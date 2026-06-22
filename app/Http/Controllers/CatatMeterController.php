@@ -44,8 +44,8 @@ class CatatMeterController extends Controller
         if ($request->filled('tahun')) {
             $catatMeter->whereYear('waktu', $request->tahun);
         }
-        if ($request->filled('search')) {
-            $search = $request->search;
+        $search = $request->input('search.value');
+        if ($search) {
             $catatMeter->where(function ($q) use ($search) {
                 $q->whereHas('Pelanggan', function ($q2) use ($search) {
                     $q2->where('nama', 'like', "%$search%")
@@ -54,7 +54,7 @@ class CatatMeterController extends Controller
             });
         }
 
-        $catatMeter->latest();
+        $catatMeter = $catatMeter->latest();
 
         return DataTables::of($catatMeter)
             ->addIndexColumn()
@@ -202,6 +202,7 @@ class CatatMeterController extends Controller
         $pel = $catatMeter->Pelanggan;
         $foto = $catatMeter->FotoCater->first();
         $fotoRumah = $pel && $pel->FotoPelanggan ? $pel->FotoPelanggan->first() : null;
+        $data['pelanggan'] = $pel ? ['id' => $pel->id, 'nama' => $pel->nama] : null;
         $data['nama'] = $pel ? $pel->nama : '';
         $data['alamat'] = $pel ? $pel->alamat : '';
         $data['telepon'] = $pel ? $pel->telepon : '';
@@ -291,8 +292,8 @@ class CatatMeterController extends Controller
         if ($request->filled('tahun')) {
             $catatMeter->whereYear('waktu', $request->tahun);
         }
-        if ($request->filled('search')) {
-            $search = $request->search;
+        $search = $request->input('search.value');
+        if ($search) {
             $catatMeter->where(function ($q) use ($search) {
                 $q->whereHas('Pelanggan', function ($q2) use ($search) {
                     $q2->where('nama', 'like', "%$search%")
@@ -301,7 +302,7 @@ class CatatMeterController extends Controller
             });
         }
 
-        $catatMeter->latest();
+        $catatMeter = $catatMeter->latest();
         $data = $catatMeter->get();
 
         $filename = 'catat-meter-' . date('Y-m-d') . '.csv';

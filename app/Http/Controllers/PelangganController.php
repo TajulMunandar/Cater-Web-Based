@@ -270,9 +270,35 @@ class PelangganController extends Controller
         }
     }
 
-    /**
-     * Toggle customer active/inactive status.
-     */
+    public function select2(Request $request)
+    {
+        $search = $request->query('q', '');
+        $page = (int) $request->query('page', 1);
+        $limit = 20;
+
+        $query = Pelanggan::select('id', 'nama', 'no_sambu')
+            ->whereNull('deleted_at');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('no_sambu', 'like', "%{$search}%");
+            });
+        }
+
+        $total = $query->count();
+        $items = $query->orderBy('nama')
+            ->skip(($page - 1) * $limit)
+            ->take($limit)
+            ->get()
+            ->map(fn($p) => ['id' => $p->id, 'text' => "{$p->nama} ({$p->no_sambu})"]);
+
+        return response()->json([
+            'results' => $items,
+            'pagination' => ['more' => ($page * $limit) < $total],
+        ]);
+    }
+
     public function toggleStatus(Pelanggan $pelanggan)
     {
         try {

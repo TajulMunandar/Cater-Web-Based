@@ -33,11 +33,12 @@ class DashboardController extends Controller
             return \Illuminate\Support\Facades\DB::table('pelanggans as p')
                 ->join('rutes as r', 'p.id_rute', '=', 'r.id')
                 ->join('wilayahs as w', 'r.id_wilayah', '=', 'w.id')
-                ->select('w.wilayah', \Illuminate\Support\Facades\DB::raw('COUNT(*) as total'))
-                ->groupBy('w.wilayah')
+                ->select('w.id', 'w.wilayah', \Illuminate\Support\Facades\DB::raw('COUNT(*) as total'))
+                ->groupBy('w.id', 'w.wilayah')
                 ->orderByDesc('total')
                 ->get()
                 ->map(fn($row) => [
+                    'id' => $row->id,
                     'wilayah' => $row->wilayah,
                     'total' => (int) $row->total,
                 ]);
@@ -134,53 +135,133 @@ class DashboardController extends Controller
         $zoom = (int) ($request->query('zoom', 9));
         $zoom = max(5, min(18, $zoom));
 
-        $step = max(0.0005, 0.05 / pow(1.6, $zoom - 9));
+        $wilayahId = $request->query('wilayah_id');
+        $detail = (bool) $request->query('detail', false);
 
-        $neLat = $request->has('neLat') ? round((float) $request->query('neLat') / $step) * $step : null;
-        $neLng = $request->has('neLng') ? round((float) $request->query('neLng') / $step) * $step : null;
-        $swLat = $request->has('swLat') ? round((float) $request->query('swLat') / $step) * $step : null;
-        $swLng = $request->has('swLng') ? round((float) $request->query('swLng') / $step) * $step : null;
+        // Grid adaptif: kasar saat zoom-out (hemat row), halus saat zoom-in (akurat).
+        // zoom 8 ≈ 220m/sel, zoom 11 ≈ 48m/sel, zoom 13 ≈ 21m/sel, zoom 16 ≈ 4m/sel.
+        // Pada mode detail, step diabaikan di SELECT (tidak ada grouping), tapi tetap dipakai
+        // untuk men-snap cache key supaya hit-rate tinggi.
+        $step = max(0.00002, 0.008 / pow(1.5, $zoom - 9));
+
+        // Bounding box viewport + buffer 30% agar marker di tepi tidak "pop" saat pan.
+        $hasBbox = $request->has('neLat') && $request->has('neLng')
+                && $request->has('swLat') && $request->has('swLng');
+
+        $bbox = null;
+        if ($hasBbox) {
+            $neLat = (float) $request->query('neLat');
+            $neLng = (float) $request->query('neLng');
+            $swLat = (float) $request->query('swLat');
+            $swLng = (float) $request->query('swLng');
+            $latSpan = max(0.0001, $neLat - $swLat);
+            $lngSpan = max(0.0001, $neLng - $swLng);
+            $buffer = 0.30;
+            $bbox = [
+                'swLat' => $swLat - $latSpan * $buffer,
+                'neLat' => $neLat + $latSpan * $buffer,
+                'swLng' => $swLng - $lngSpan * $buffer,
+                'neLng' => $neLng + $lngSpan * $buffer,
+            ];
+        }
+
+        // Snap bbox ke grid supaya cache hit-rate tinggi untuk viewport yang hampir sama.
+        $bboxSnapped = $bbox ? [
+            'swLat' => floor($bbox['swLat'] / $step) * $step,
+            'neLat' => ceil($bbox['neLat'] / $step) * $step,
+            'swLng' => floor($bbox['swLng'] / $step) * $step,
+            'neLng' => ceil($bbox['neLng'] / $step) * $step,
+        ] : null;
 
         $cacheKey = sprintf(
-            'dashboard_koordinat_z%d_%s_%s_%s_%s',
+            'dashboard_koordinat_v3_%s_z%d_%s_w%s',
+            $detail ? 'd' : 'c',
             $zoom,
-            $neLat ?? 'def', $neLng ?? 'def', $swLat ?? 'def', $swLng ?? 'def'
+            $bboxSnapped
+                ? sprintf('%s_%s_%s_%s',
+                    round($bboxSnapped['swLat'], 5),
+                    round($bboxSnapped['neLat'], 5),
+                    round($bboxSnapped['swLng'], 5),
+                    round($bboxSnapped['neLng'], 5))
+                : 'global',
+            $wilayahId ?? 'all'
         );
 
-        $ttl = 120;
+        $ttl = 180;
 
-        $data = Cache::remember($cacheKey, $ttl, function () use ($zoom, $step, $neLat, $neLng, $swLat, $swLng, $request) {
+        $data = Cache::remember($cacheKey, $ttl, function () use ($step, $bbox, $wilayahId, $detail) {
             $query = \Illuminate\Support\Facades\DB::table('pelanggans as p')
                 ->whereNotNull('p.lat')
                 ->whereNotNull('p.long')
                 ->where('p.lat', '!=', 0)
                 ->where('p.long', '!=', 0)
-                ->whereNull('p.deleted_at')
-                ->selectRaw('
-                    ROUND(p.lat / ?) * ?  as grid_lat,
-                    ROUND(p.long / ?) * ? as grid_lng,
-                    COUNT(*)            as cnt,
-                    MAX(p.id)           as any_id,
-                    MAX(p.nama)         as any_nama,
-                    MAX(p.status = "non-aktif") as has_nonaktif
-                ', [$step, $step, $step, $step]);
+                ->whereNull('p.deleted_at');
 
-            if ($neLat !== null && $neLng !== null && $swLat !== null && $swLng !== null) {
-                $query->whereBetween('p.lat', [$swLat, $neLat])
-                       ->whereBetween('p.long', [$swLng, $neLng]);
-            } else {
-                $query->where('p.lat', '>=', 4.70)
-                      ->where('p.lat', '<=', 5.40)
-                      ->where('p.long', '>=', 96.60)
-                      ->where('p.long', '<=', 97.55);
+            if ($wilayahId) {
+                $query->join('rutes as r', 'p.id_rute', '=', 'r.id')
+                      ->where('r.id_wilayah', $wilayahId);
             }
 
-            $query->limit(500)
-                  ->groupBy('grid_lat', 'grid_lng');
+            if ($bbox) {
+                $query->whereBetween('p.lat', [$bbox['swLat'], $bbox['neLat']])
+                      ->whereBetween('p.long', [$bbox['swLng'], $bbox['neLng']]);
+            }
 
-            return $query->get()->map(function ($row) use ($step) {
+            if ($detail) {
+                // Mode detail: 1 baris per pelanggan, data lengkap untuk popup.
+                $query->leftJoin('golongans as g', 'p.id_gol', '=', 'g.id');
+                if (!$wilayahId) {
+                    $query->leftJoin('rutes as r2', 'p.id_rute', '=', 'r2.id')
+                          ->leftJoin('wilayahs as w', 'r2.id_wilayah', '=', 'w.id');
+                } else {
+                    $query->leftJoin('wilayahs as w', 'r.id_wilayah', '=', 'w.id');
+                }
+
+                $query->select([
+                    'p.id', 'p.nama', 'p.lat', 'p.long as lng',
+                    'p.status', 'p.no_sambu', 'p.alamat', 'p.telepon',
+                    'g.nama as golongan_nama',
+                    'w.wilayah as wilayah_nama',
+                ]);
+
+                return $query->limit(2000)->get()->map(function ($row) {
+                    return [
+                        'id'      => 'p_' . $row->id,
+                        'any_id'  => (int) $row->id,
+                        'nama'    => $row->nama,
+                        'lat'     => (float) $row->lat,
+                        'lng'     => (float) $row->lng,
+                        'status'  => $row->status,
+                        'count'   => 1,
+                        'detail'  => [
+                            'no_sambu' => $row->no_sambu,
+                            'alamat'   => $row->alamat,
+                            'telepon'  => $row->telepon,
+                            'golongan' => $row->golongan_nama,
+                            'wilayah'  => $row->wilayah_nama,
+                        ],
+                    ];
+                })->values()->all();
+            }
+
+            // Mode cluster (default): grid aggregation untuk performa.
+            $query->selectRaw('
+                ROUND(p.lat / ?) * ?  as grid_lat,
+                ROUND(p.long / ?) * ? as grid_lng,
+                COUNT(*)            as cnt,
+                MAX(p.id)           as any_id,
+                MAX(p.nama)         as any_nama,
+                MAX(p.status = "non-aktif") as has_nonaktif
+            ', [$step, $step, $step, $step]);
+
+            $query->groupBy('grid_lat', 'grid_lng')
+                  ->orderByRaw('cnt DESC')
+                  ->limit(2000);
+
+            return $query->get()->map(function ($row) {
                 return [
                     'id'     => 'c_' . md5((string)($row->grid_lat . '_' . $row->grid_lng)),
+                    'any_id' => (int) $row->any_id,
                     'nama'   => $row->any_nama,
                     'lat'    => (float) $row->grid_lat,
                     'lng'    => (float) $row->grid_lng,

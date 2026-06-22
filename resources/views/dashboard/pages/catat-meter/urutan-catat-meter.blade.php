@@ -10,7 +10,7 @@
         <div class="card" style="border:none;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;">
             <!-- Tab Navigation -->
             <div style="padding:16px 20px 0;background:#fff;border-bottom:1px solid #e2e8f0;">
-                <ul class="nav nav-pills" style="gap:6px;">
+                <ul class="nav nav-pills mb-2" style="gap:6px;">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('cater.index') }}" style="color:#64748b;border-radius:8px;padding:8px 20px;font-size:13px;">Catat Meter</a>
                     </li>

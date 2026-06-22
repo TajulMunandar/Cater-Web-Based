@@ -262,19 +262,40 @@
                         <i class="ti ti-map-pin me-2" style="color:var(--color-danger);"></i>
                         Peta Sebaran
                     </h5>
-                    <small id="mapStats" style="font-size:0.75rem;color:var(--color-text-muted);">
-                        {{ $stats['total_pelanggan'] }} pelanggan
-                    </small>
-                </div>
-                <div style="border-radius:0 0 var(--radius-lg) var(--radius-lg);overflow:hidden;">
-                    <div id="mapDashboard" style="height:380px;">
-                        <div id="mapLoading" class="d-flex flex-column align-items-center justify-content-center"
-                            style="height:380px;background:#f8fafc;">
-                            <div class="spinner-border text-primary mb-2" role="status"></div>
-                            <small style="color:var(--color-text-muted);">Memuat data koordinat...</small>
-                        </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <select id="filterWilayahPeta" class="form-select form-select-sm" style="width:auto;font-size:0.8rem;">
+                            @foreach($distribusiWilayah as $w)
+                                <option value="{{ $w['id'] ?? '' }}">{{ $w['wilayah'] }} ({{ $w['total'] }})</option>
+                            @endforeach
+                        </select>
+                        <small id="mapStats" style="font-size:0.75rem;color:var(--color-text-muted);">
+                            {{ $stats['total_pelanggan'] }} pelanggan
+                        </small>
                     </div>
                 </div>
+                <div style="position:relative;border-radius:0 0 var(--radius-lg) var(--radius-lg);overflow:hidden;">
+                    <div id="mapDashboard" style="height:380px;"></div>
+                    <div id="mapLoading"
+                         style="position:absolute;inset:0;height:380px;background:#f8fafc;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;transition:opacity .25s ease;">
+                        <div class="spinner-border text-primary mb-2" role="status"></div>
+                        <small style="color:var(--color-text-muted);">Memuat data koordinat...</small>
+                    </div>
+                    <div id="mapLoadingMini"
+                         style="position:absolute;top:12px;right:12px;z-index:999;display:none;align-items:center;gap:8px;
+                                background:rgba(255,255,255,0.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+                                padding:6px 12px;border-radius:100px;box-shadow:0 2px 10px rgba(0,0,0,0.08);
+                                font-size:11px;color:#64748B;font-weight:500;
+                                opacity:0;transform:translateY(-4px);
+                                transition:opacity .2s ease, transform .2s ease;">
+                        <span class="map-mini-spinner" style="width:12px;height:12px;display:inline-block;
+                              border:2px solid #E2E8F0;border-top-color:#2563EB;border-radius:50%;
+                              animation:mapSpin 0.8s linear infinite;"></span>
+                        <span>Memuat…</span>
+                    </div>
+                </div>
+                <style>
+                    @keyframes mapSpin { to { transform: rotate(360deg); } }
+                </style>
             </div>
         </div>
         <div class="col-lg-4 animate-fade-in-up stagger-6">
@@ -440,6 +461,8 @@
 
 @push('head')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <style>
         #mapDashboard {
             height: 380px;
@@ -511,12 +534,39 @@
                 height: 260px;
             }
         }
+
+        .golongan-scroll {
+            scroll-behavior: smooth;
+        }
+
+        .golongan-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .golongan-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .golongan-scroll::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 10px;
+        }
+
+        .golongan-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--color-text-muted);
+        }
+
+        .golongan-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-border) transparent;
+        }
     </style>
 @endpush
 
 @push('script')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script>
         // ==== ANIMATED COUNTER ====
         document.addEventListener('DOMContentLoaded', function() {
@@ -750,141 +800,280 @@
             });
         })();
 
+        function showMapError(msg) {
+            var loading = document.getElementById('mapLoading');
+            if (loading) {
+                loading.style.display = 'flex';
+                loading.innerHTML = '<small style="color:#dc2626;">' + (msg || 'Gagal memuat data peta.') + '</small>';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            initPeta();
+        });
+
+        function initPeta() {
             var mapEl = document.getElementById('mapDashboard');
             if (!mapEl) return;
 
-            var markerGroup = L.featureGroup();
+            if (typeof L === 'undefined') {
+                console.error('Leaflet belum dimuat');
+                showMapError('Library peta gagal dimuat. Coba refresh halaman.');
+                return;
+            }
+
+            window.markerGroup = markerGroup = L.markerClusterGroup({
+                chunkedLoading: true,
+                chunkInterval: 150,
+                chunkDelay: 30,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                maxClusterRadius: function(zoom) {
+                    // Radius kluster lebih besar saat zoom-out → lebih sedikit kluster yang dirender.
+                    if (zoom <= 10) return 140;
+                    if (zoom <= 12) return 100;
+                    if (zoom <= 13) return 60;
+                    return 40;
+                },
+                disableClusteringAtZoom: 14,
+                animate: false,
+                animateAddingMarkers: false,
+                iconCreateFunction: function(cluster) {
+                    var childCount = 0;
+                    cluster.getAllChildMarkers().forEach(function(m) {
+                        childCount += (m.options && m.options.pelangganCount) ? m.options.pelangganCount : 1;
+                    });
+                    var size = childCount < 10 ? 36 : childCount < 100 ? 44 : childCount < 500 ? 52 : 60;
+                    var bg = childCount < 100 ? '#2563EB' : childCount < 500 ? '#D97706' : '#DC2626';
+                    var html = '<div style="background:' + bg + ';color:#fff;width:' + size + 'px;height:' + size + 'px;' +
+                        'border-radius:50%;display:flex;align-items:center;justify-content:center;' +
+                        'font-weight:700;font-size:' + (size < 44 ? 11 : size < 52 ? 12 : 13) + 'px;' +
+                        'border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.25);">' + childCount + '</div>';
+                    return L.divIcon({
+                        html: html,
+                        className: '',
+                        iconSize: L.point(size, size)
+                    });
+                }
+            });
 
             var iconAktif = L.divIcon({
                 className: '',
                 html: '<div style="width:14px;height:14px;background:#059669;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.25);transition:transform 200ms;"></div>',
-                iconSize: [14, 14],
-                iconAnchor: [7, 7]
+                iconSize: [14, 14], iconAnchor: [7, 7]
             });
             var iconNonAktif = L.divIcon({
                 className: '',
                 html: '<div style="width:14px;height:14px;background:#DC2626;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.25);transition:transform 200ms;"></div>',
-                iconSize: [14, 14],
-                iconAnchor: [7, 7]
+                iconSize: [14, 14], iconAnchor: [7, 7]
             });
 
-            var map = L.map('mapDashboard', {
+            window.map = map = L.map('mapDashboard', {
                 zoomControl: false,
                 scrollWheelZoom: false
-            }).setView([5.1801, 97.1507], 13); // Koordinat Lhokseumawe asli
+            }).setView([5.1801, 97.1507], 13);
 
-            L.control.zoom({
-                position: 'bottomleft'
-            }).addTo(map);
+            L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(map);
 
+            var cardEl = document.querySelector('.stagger-6');
+            if (cardEl) {
+                cardEl.addEventListener('animationend', function() {
+                    map.invalidateSize();
+                }, { once: true });
+            }
+            setTimeout(function() { map.invalidateSize(); }, 300);
+
             map.whenReady(function() {
-                map.invalidateSize();
+                loadMapData();
+            });
+            // Safety: paksa tutup loading setelah 8 detik jika masih tersangkut
+            setTimeout(function() {
+                hideMapLoading();
+            }, 8000);
+
+            var isFittingBounds = false;
+            var reloadTimer = null;
+            var boundsFittedForWilayah = null;
+            var currentFetchController = null;
+            var mapLoadedOnce = false;
+
+            function showMapLoading() {
+                if (!mapLoadedOnce) {
+                    // Load pertama: overlay penuh supaya tidak ada peta kosong sekilas.
+                    var full = document.getElementById('mapLoading');
+                    if (full) {
+                        full.innerHTML = '<div class="spinner-border text-primary mb-2" role="status"></div>' +
+                            '<small style="color:var(--color-text-muted);">Memuat data koordinat...</small>';
+                        full.style.display = 'flex';
+                    }
+                } else {
+                    // Load berikutnya: chip kecil di pojok, marker lama tetap terlihat.
+                    var mini = document.getElementById('mapLoadingMini');
+                    if (mini) {
+                        mini.style.display = 'inline-flex';
+                        // Trigger fade-in (opacity 0 -> 1) via requestAnimationFrame.
+                        requestAnimationFrame(function() {
+                            mini.style.opacity = '1';
+                            mini.style.transform = 'translateY(0)';
+                        });
+                    }
+                }
+            }
+
+            function hideMapLoading() {
+                var full = document.getElementById('mapLoading');
+                if (full && full.style.display !== 'none') {
+                    full.style.opacity = '0';
+                    setTimeout(function() {
+                        full.style.display = 'none';
+                        full.style.opacity = '1'; // reset untuk load berikutnya
+                    }, 260);
+                }
+                var mini = document.getElementById('mapLoadingMini');
+                if (mini) {
+                    mini.style.opacity = '0';
+                    mini.style.transform = 'translateY(-4px)';
+                    setTimeout(function() {
+                        if (mini.style.opacity === '0') mini.style.display = 'none';
+                    }, 220);
+                }
+                mapLoadedOnce = true;
+            }
+
+            map.on('moveend zoomend', function() {
+                if (isFittingBounds) return;
+                clearTimeout(reloadTimer);
+                reloadTimer = setTimeout(loadMapData, 250);
+            });
+
+            document.getElementById('filterWilayahPeta').addEventListener('change', function() {
+                boundsFittedForWilayah = null;
                 loadMapData();
             });
 
-            var reloadTimer = null;
-            map.on('moveend zoomend', function() {
-                clearTimeout(reloadTimer);
-                reloadTimer = setTimeout(loadMapData, 400);
-            });
+            function loadMapData(skipFitBounds) {
+                showMapLoading();
+                try {
 
-            var detailUrl = function(id) {
-                return '/pelanggan/' + id;
-            };
+                    var zoom = map.getZoom();
+                    var bounds = map.getBounds();
+                    var wilayahId = document.getElementById('filterWilayahPeta').value;
+                    var url = '{{ route("dashboard.koordinat") }}' +
+                        '?zoom=' + zoom +
+                        '&neLat=' + bounds.getNorthEast().lat.toFixed(6) +
+                        '&neLng=' + bounds.getNorthEast().lng.toFixed(6) +
+                        '&swLat=' + bounds.getSouthWest().lat.toFixed(6) +
+                        '&swLng=' + bounds.getSouthWest().lng.toFixed(6) +
+                        (wilayahId ? '&wilayah_id=' + wilayahId : '');
 
-            function loadMapData() {
-                var loading = document.getElementById('mapLoading');
-                if (loading) loading.style.display = '';
+                    if (currentFetchController) {
+                        try { currentFetchController.abort(); } catch (e) {}
+                    }
+                    currentFetchController = typeof AbortController !== 'undefined' ? new AbortController() : null;
 
-                var zoom = map.getZoom();
-                var bounds = map.getBounds();
-                var url = '{{ route('dashboard.koordinat') }}' +
-                    '?zoom=' + zoom +
-                    '&neLat=' + bounds.getNorthEast().lat.toFixed(6) +
-                    '&neLng=' + bounds.getNorthEast().lng.toFixed(6) +
-                    '&swLat=' + bounds.getSouthWest().lat.toFixed(6) +
-                    '&swLng=' + bounds.getSouthWest().lng.toFixed(6);
+                    fetch(url, currentFetchController ? { signal: currentFetchController.signal } : {})
+                        .then(function(r) {
+                            if (!r.ok) throw new Error('HTTP ' + r.status);
+                            return r.json();
+                        })
+                        .then(function(data) {
+                            currentFetchController = null;
+                            try {
+                                // Siapkan marker baru DULU, baru ganti yang lama — hindari flash kosong.
+                                var newMarkers = [];
+                                data.forEach(function(p) {
+                                    try {
+                                        var icon = p.status === 'aktif' ? iconAktif : iconNonAktif;
+                                        var lat = Number(p.lat);
+                                        var lng = Number(p.lng);
+                                        if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) return;
+                                        var popupHtml =
+                                            '<div style="min-width:280px;">' +
+                                            '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;">' +
+                                            '<div>' +
+                                            '<h6 style="margin:0 0 2px;font-weight:700;font-size:15px;color:#0F172A;">' + (p.nama || '-') + '</h6>' +
+                                            '<span style="font-size:12px;color:#94A3B8;">' + (p.status === 'aktif' ? 'Pelanggan Aktif' : 'Pelanggan Non-Aktif') + '</span>' +
+                                            '</div>' +
+                                            '<span style="flex-shrink:0;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;' +
+                                            (p.status === 'aktif' ? 'background:#ECFDF5;color:#059669;' : 'background:#FEF2F2;color:#DC2626;') +
+                                            '">' + (p.count > 1 ? p.count + ' pelanggan' : (p.status === 'aktif' ? 'Aktif' : 'Non-Aktif')) + '</span>' +
+                                            '</div>' +
+                                            '<p style="margin:0 0 10px;font-size:12px;color:#64748B;">Koordinat: ' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</p>' +
+                                            (p.count === 1
+                                                ? '<a href="/pelanggan/' + p.any_id + '" style="display:block;text-align:center;padding:8px;background:#2563EB;color:#fff;text-decoration:none;border-radius:8px;font-size:12px;font-weight:600;">Lihat Detail &rarr;</a>'
+                                                : '') +
+                                            '</div>';
 
-                fetch(url)
-                    .then(function(r) {
-                        return r.json();
-                    })
-                    .then(function(data) {
-                        markerGroup.clearLayers();
-                        markerGroup.addLayers(data.map(function(p) {
-                            var icon = p.status === 'aktif' ? iconAktif : iconNonAktif;
-                            var popupHtml =
-                                '<div style="min-width:320px;">' +
-                                '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;">' +
-                                '<div>' +
-                                '<h6 style="margin:0 0 2px;font-weight:700;font-size:17px;color:#0F172A;">' +
-                                p.nama + '</h6>' +
-                                '<span style="font-size:12px;color:#94A3B8;">' + (p.status ===
-                                    'aktif' ? 'Pelanggan Aktif' : 'Pelanggan Non-Aktif') +
-                                '</span>' +
-                                '</div>' +
-                                '<span style="flex-shrink:0;padding:4px 14px;border-radius:100px;font-size:12px;font-weight:600;' +
-                                (p.status === 'aktif' ?
-                                    'background:#ECFDF5;color:#059669;' :
-                                    'background:#FEF2F2;color:#DC2626;') +
-                                '">' + (p.count > 1 ? p.count + ' pelanggan' : (p.status ===
-                                    'aktif' ? 'Aktif' : 'Non-Aktif')) + '</span>' +
-                                '</div>' +
-                                '<div style="background:#F8FAFC;border:1px solid #F1F5F9;border-radius:10px;padding:12px 14px;margin-bottom:14px;">' +
-                                '<p style="margin:0 0 6px;font-size:13px;color:#64748B;"><span style="color:#374151;font-weight:600;">Koordinat:</span> ' +
-                                p.lat.toFixed(5) + ', ' + p.lng.toFixed(5) + '</p>' +
-                                '</div>' +
-                                '<a href="' + detailUrl(p.id) +
-                                '" style="display:block;text-align:center;padding:9px 20px;background:#2563EB;color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:600;transition:background 0.15s;">Lihat Detail &rarr;</a>' +
-                                '</div>';
+                                        var m = L.marker([lat, lng], { icon: icon, pelangganCount: (p.count || 1) });
+                                        m.bindPopup(popupHtml, { maxWidth: 340, minWidth: 280 });
+                                        m.on('mouseover', function() { this.openPopup(); });
+                                        newMarkers.push(m);
+                                    } catch (e) { /* skip single */ }
+                                });
 
-                            var m = L.marker([p.lat, p.lng], {
-                                icon: icon
-                            });
-                            m.bindPopup(popupHtml, {
-                                maxWidth: 380,
-                                minWidth: 320
-                            });
-                            m.on('mouseover', function() {
-                                this.openPopup();
-                            });
-                            return m;
-                        }));
-                        markerGroup.addTo(map);
+                                // Ganti layer secara atomic: clear lalu add segera.
+                                markerGroup.clearLayers();
+                                markerGroup.addLayers(newMarkers);
+                                if (!map.hasLayer(markerGroup)) markerGroup.addTo(map);
 
-                        if (loading) loading.style.display = 'none';
-                    })
-                    .catch(function() {
-                        if (loading) loading.innerHTML =
-                            '<small style="color:#dc2626;">Gagal memuat data peta.</small>';
-                    });
+                                var curWilayah = document.getElementById('filterWilayahPeta').value;
+                                if (!skipFitBounds && curWilayah && newMarkers.length > 0 && boundsFittedForWilayah !== curWilayah) {
+                                    boundsFittedForWilayah = curWilayah;
+                                    isFittingBounds = true;
+                                    var group = L.featureGroup(newMarkers);
+                                    map.fitBounds(group.getBounds().pad(0.15), { animate: true, duration: 0.5, maxZoom: 14 });
+                                    setTimeout(function() { isFittingBounds = false; }, 600);
+                                }
+
+                            } catch (err) {
+                                console.error('Error render marker peta:', err);
+                            } finally {
+                                hideMapLoading();
+                            }
+                        })
+                        .catch(function(err) {
+                            if (err && err.name === 'AbortError') {
+                                hideMapLoading();
+                                return;
+                            }
+                            console.error('Fetch koordinat gagal:', err);
+                            hideMapLoading();
+                            var mapEl = document.getElementById('mapDashboard');
+                            if (mapEl) {
+                                var errDiv = document.createElement('div');
+                                errDiv.style.cssText = 'position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#FEF2F2;color:#DC2626;padding:6px 14px;border-radius:8px;font-size:12px;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.1);';
+                                errDiv.textContent = 'Gagal memuat data peta. Coba refresh.';
+                                mapEl.parentElement.appendChild(errDiv);
+                                setTimeout(function() { errDiv.remove(); }, 5000);
+                            }
+                        });
+                } catch (err) {
+                    console.error('loadMapData error di luar fetch:', err);
+                    hideMapLoading();
+                }
             }
 
-            var legend = L.control({
-                position: 'bottomright'
-            });
+            var legend = L.control({ position: 'bottomright' });
             legend.onAdd = function() {
                 var div = L.DomUtil.create('div', '');
-                div.style.cssText =
-                    'background:#fff;padding:10px 14px;font-size:12px;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,0.1);';
+                div.style.cssText = 'background:#fff;padding:10px 14px;font-size:12px;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,0.1);';
                 div.innerHTML =
                     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
-                    '<span style="display:inline-block;width:10px;height:10px;background:#059669;border-radius:50%;"></span>' +
-                    '<span style="color:#374151;">Aktif</span>' +
+                        '<span style="display:inline-block;width:10px;height:10px;background:#059669;border-radius:50%;"></span>' +
+                        '<span style="color:#374151;">Aktif</span>' +
                     '</div>' +
                     '<div style="display:flex;align-items:center;gap:8px;">' +
-                    '<span style="display:inline-block;width:10px;height:10px;background:#DC2626;border-radius:50%;"></span>' +
-                    '<span style="color:#374151;">Non-Aktif</span>' +
+                        '<span style="display:inline-block;width:10px;height:10px;background:#DC2626;border-radius:50%;"></span>' +
+                        '<span style="color:#374151;">Non-Aktif</span>' +
                     '</div>';
                 return div;
             };
             legend.addTo(map);
-        });
+        }
 
         // ==== AUTO-REFRESH NOTIFIKASI ====
         function refreshNotifikasi() {

@@ -3,7 +3,6 @@
 @section('title', 'Catat Meter')
 
 @php
-$pelanggans = App\Models\Pelanggan::all();
 $bulanList = [
     1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
     5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
@@ -37,7 +36,7 @@ $tahunList = range(date('Y'), date('Y') - 5);
         <div class="card" style="border:none;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;">
             <!-- Tab Navigation -->
             <div style="padding:16px 20px 0;background:#fff;border-bottom:1px solid #e2e8f0;">
-                <ul class="nav nav-pills" style="gap:6px;">
+                <ul class="nav nav-pills mb-2" style="gap:6px;">
                     <li class="nav-item">
                         <a class="nav-link active" href="{{ route('cater.index') }}" style="background:#3b82f6;color:#fff;border-radius:8px;padding:8px 20px;font-weight:700;font-size:13px;">Catat Meter</a>
                     </li>
@@ -55,7 +54,7 @@ $tahunList = range(date('Y'), date('Y') - 5);
                 <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
                     <div style="flex:1;min-width:140px;">
                         <label style="display:block;font-size:12px;color:#64748b;margin-bottom:4px;font-weight:500;">Petugas</label>
-                        <select id="filter_petugas" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
+                        <select id="filter_petugas" class="select2-filter" data-placeholder="-- Semua Petugas --" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
                             <option value="">-- SEMUA PETUGAS --</option>
                             @foreach($petugasList as $p)
                                 <option value="{{ $p->id }}">{{ $p->nama }}</option>
@@ -64,7 +63,7 @@ $tahunList = range(date('Y'), date('Y') - 5);
                     </div>
                     <div style="flex:1;min-width:140px;">
                         <label style="display:block;font-size:12px;color:#64748b;margin-bottom:4px;font-weight:500;">Wilayah</label>
-                        <select id="filter_wilayah" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
+                        <select id="filter_wilayah" class="select2-filter" data-placeholder="-- Semua Wilayah --" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
                             <option value="">-- SEMUA WILAYAH --</option>
                             @foreach($wilayahList as $w)
                                 <option value="{{ $w->id }}">{{ $w->wilayah }}</option>
@@ -73,7 +72,7 @@ $tahunList = range(date('Y'), date('Y') - 5);
                     </div>
                     <div style="flex:1;min-width:140px;">
                         <label style="display:block;font-size:12px;color:#64748b;margin-bottom:4px;font-weight:500;">Kondisi Meter</label>
-                        <select id="filter_kondisi" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
+                        <select id="filter_kondisi" class="select2-filter" data-placeholder="-- Semua Kondisi --" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
                             <option value="">-- SEMUA KONDISI --</option>
                             @foreach($kondisiList as $k)
                                 <option value="{{ $k->id }}">{{ $k->kondisi }}</option>
@@ -82,7 +81,7 @@ $tahunList = range(date('Y'), date('Y') - 5);
                     </div>
                     <div style="flex:1;min-width:120px;">
                         <label style="display:block;font-size:12px;color:#64748b;margin-bottom:4px;font-weight:500;">Bulan</label>
-                        <select id="filter_bulan" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
+                        <select id="filter_bulan" class="select2-filter" data-placeholder="-- Semua Bulan --" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
                             <option value="">-- SEMUA BULAN --</option>
                             @foreach($bulanList as $key => $bln)
                                 <option value="{{ $key }}">{{ $bln }}</option>
@@ -91,7 +90,7 @@ $tahunList = range(date('Y'), date('Y') - 5);
                     </div>
                     <div style="flex:1;min-width:100px;">
                         <label style="display:block;font-size:12px;color:#64748b;margin-bottom:4px;font-weight:500;">Tahun</label>
-                        <select id="filter_tahun" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
+                        <select id="filter_tahun" class="select2-filter" data-placeholder="-- Semua Tahun --" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
                             <option value="">-- SEMUA TAHUN --</option>
                             @foreach($tahunList as $thn)
                                 <option value="{{ $thn }}">{{ $thn }}</option>
@@ -133,9 +132,7 @@ $tahunList = range(date('Y'), date('Y') - 5);
                             <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:13px;"></i>
                             <input type="text" id="tableSearch" placeholder="Cari..." style="border:1px solid #e2e8f0;border-radius:8px;padding:7px 12px 7px 34px;font-size:13px;color:#1e293b;outline:none;width:200px;">
                         </div>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal" style="background:#3b82f6;border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;">
-                            <i class="fas fa-plus"></i> Tambah
-                        </button>
+
                     </div>
                 </div>
 
@@ -162,82 +159,6 @@ $tahunList = range(date('Y'), date('Y') - 5);
     </div>
 </div>
 
-<!-- Create Modal -->
-<div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
-        <div class="modal-content" style="border-radius:16px;overflow:hidden;border:none;">
-            <form id="createForm" enctype="multipart/form-data">
-                <div style="background:#3b82f6;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
-                    <h5 style="color:#fff;font-weight:700;font-size:16px;margin:0;display:flex;align-items:center;gap:8px;">
-                        <i class="fas fa-plus-circle"></i> Tambah Catat Meter
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="filter:brightness(10);"></button>
-                </div>
-                @csrf
-                <div style="padding:20px 24px;">
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;">Pelanggan</label>
-                        <select class="form-select" id="id_pelanggan" name="id_pelanggan" required style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;">
-                            <option value="">Pilih Pelanggan</option>
-                            @foreach($pelanggans as $pelanggan)
-                                <option value="{{ $pelanggan->id }}">{{ $pelanggan->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;">Petugas</label>
-                        <select class="form-select" id="id_petugas" name="id_petugas" required style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;">
-                            <option value="">Pilih Petugas</option>
-                            @foreach($petugasList as $petugas)
-                                <option value="{{ $petugas->id }}">{{ $petugas->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;">Kondisi</label>
-                        <select class="form-select" id="id_kondisi" name="id_kondisi" required style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;">
-                            <option value="">Pilih Kondisi</option>
-                            @foreach($kondisiList as $kondisi)
-                                <option value="{{ $kondisi->id }}">{{ $kondisi->kondisi }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;">Waktu</label>
-                            <input type="datetime-local" class="form-control" id="waktu" name="waktu" required style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;">Stand</label>
-                            <input type="number" class="form-control" id="stand" name="stand" required style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;">GPS</label>
-                        <input type="text" class="form-control" id="gps" name="gps" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;">Status</label>
-                        <select class="form-select" id="status" name="status" required style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;">
-                            <option value="1">Aktif</option>
-                            <option value="0">Tidak Aktif</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;">Foto Meter</label>
-                        <input type="file" class="form-control" id="foto" name="foto" accept="image/*" onchange="previewFoto(event)" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;">
-                        <img id="fotoPreview" src="#" alt="Preview" style="max-height:160px;display:none;width:100%;object-fit:cover;border-radius:8px;margin-top:8px;">
-                    </div>
-                </div>
-                <div style="padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;">Batal</button>
-                    <button type="submit" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <!-- Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered" role="document">
@@ -255,11 +176,8 @@ $tahunList = range(date('Y'), date('Y') - 5);
                 <div style="padding:20px 24px;">
                     <div class="mb-3">
                         <label class="form-label" style="font-size:12px;color:#64748b;font-weight:500;margin-bottom:4px;">Pelanggan</label>
-                        <select class="form-select" id="edit_id_pelanggan" name="id_pelanggan" required style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;">
+                        <select class="form-select select2-pelanggan" id="edit_id_pelanggan" name="id_pelanggan" required>
                             <option value="">Pilih Pelanggan</option>
-                            @foreach($pelanggans as $pelanggan)
-                                <option value="{{ $pelanggan->id }}">{{ $pelanggan->nama }}</option>
-                            @endforeach
                         </select>
                     </div>
                     <div class="mb-3">
@@ -474,12 +392,14 @@ $tahunList = range(date('Y'), date('Y') - 5);
 
 @push('head')
 <link rel="stylesheet" href="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.min.css') }}">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <style>
 body { background:#f1f5f9; }
 
 /* Filter focus */
 #filter_petugas:focus, #filter_wilayah:focus, #filter_kondisi:focus,
-#filter_bulan:focus, #filter_tahun:focus, #filter_search:focus,
+#filter_bulan:focus, #filter_tahun:focus,
 #tableSearch:focus, #pageLengthSelect:focus {
     border-color:#3b82f6 !important;
     box-shadow:0 0 0 3px rgba(59,130,246,0.1) !important;
@@ -521,6 +441,20 @@ th { background:#1e3a8a !important; color:#fff !important; font-weight:700 !impo
 /* Photo viewer drag */
 #photoViewImage { user-select:none; -webkit-user-drag:none; }
 
+/* Skeleton loading */
+.skeleton-row td { padding:14px 16px; }
+.skeleton-bar {
+    height:14px;
+    border-radius:6px;
+    background:linear-gradient(90deg,#F1F5F9 25%,#E2E8F0 37%,#F1F5F9 63%);
+    background-size:400% 100%;
+    animation:skeleton-shimmer 1.4s ease infinite;
+}
+@keyframes skeleton-shimmer {
+    0% { background-position:100% 50%; }
+    100% { background-position:0 50%; }
+}
+
 /* Responsive */
 @media (max-width:768px) {
     #myTable { font-size:12px !important; }
@@ -531,7 +465,39 @@ th { background:#1e3a8a !important; color:#fff !important; font-weight:700 !impo
 
 @push('script')
 <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+$(document).ready(function() {
+    $('.select2-filter').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        allowClear: true,
+        placeholder: function() {
+            return $(this).data('placeholder');
+        }
+    });
+
+    $('.select2-pelanggan').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        allowClear: true,
+        placeholder: 'Cari pelanggan...',
+        minimumInputLength: 1,
+        ajax: {
+            url: '{{ route("pelanggan.select2") }}',
+            dataType: 'json',
+            delay: 300,
+            data: function(params) {
+                return { q: params.term, page: params.page || 1 };
+            },
+            processResults: function(data) {
+                return { results: data.results, pagination: data.pagination };
+            },
+            cache: true
+        }
+    });
+});
+
 var photoState = { rotation: 0, scale: 1, currentUrl: '', currentId: null };
 var isDragging = false, dragStartX, dragStartY, dragOffsetX = 0, dragOffsetY = 0;
 
@@ -547,7 +513,6 @@ $(document).ready(function() {
                 d.id_kondisi = $('#filter_kondisi').val();
                 d.bulan = $('#filter_bulan').val();
                 d.tahun = $('#filter_tahun').val();
-                d.search = $('#filter_search').val();
             }
         },
         columns: [
@@ -581,9 +546,27 @@ $(document).ready(function() {
         }
     }).on('draw', function() {
         $('.dataTables_filter input[type="search"]').css({ marginBottom: '10px' });
+    }).on('processing.dt', function(e, settings, processing) {
+        var tbody = $('#myTable tbody');
+        if (processing) {
+            var cols = 9;
+            var skeletonRows = '';
+            for (var i = 0; i < 8; i++) {
+                skeletonRows += '<tr class="skeleton-row">';
+                for (var j = 0; j < cols; j++) {
+                    var w = [20, 40, 80, 90, 100, 80, 70, 90, 60][j] || 60;
+                    skeletonRows += '<td><div class="skeleton-bar" style="width:' + w + 'px;"></div></td>';
+                }
+                skeletonRows += '</tr>';
+            }
+            tbody.html(skeletonRows);
+        }
     });
 
-    // Custom page length
+    // Reload table when filters change
+    $('#filter_petugas, #filter_wilayah, #filter_kondisi, #filter_bulan, #filter_tahun').on('change', function() {
+        table.ajax.reload();
+    });
     $('#pageLengthSelect').on('change', function() {
         table.page.len(parseInt($(this).val())).draw();
     });
@@ -600,14 +583,9 @@ $(document).ready(function() {
 
     // Filter reset
     $('#filter_reset').on('click', function() {
-        $('#filter_petugas, #filter_wilayah, #filter_kondisi, #filter_bulan, #filter_tahun').val('');
-        $('#filter_search').val('');
+        $('.select2-filter').val(null).trigger('change.select2');
+        $('#tableSearch').val('');
         table.ajax.reload();
-    });
-
-    // Enter key on filter search
-    $('#filter_search').on('keypress', function(e) {
-        if (e.which === 13) { $('#filter_apply').click(); }
     });
 
     // Row click for detail
@@ -621,30 +599,6 @@ $(document).ready(function() {
         }
     });
 
-    // Create form
-    $('#createForm').submit(function(e) {
-        e.preventDefault();
-        var formData = new FormData(this);
-        $.ajax({
-            url: '/cater',
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-            success: function(response) {
-                bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-                $('#createForm')[0].reset();
-                $('#fotoPreview').hide();
-                table.ajax.reload();
-                Swal.fire({ icon: 'success', title: 'Berhasil', text: response.success, timer: 1500, showConfirmButton: false });
-            },
-            error: function(xhr) {
-                Swal.fire({ icon: 'error', title: 'Gagal', text: xhr.responseJSON ? Object.values(xhr.responseJSON.errors).flat().join(', ') : 'Terjadi kesalahan' });
-            }
-        });
-    });
-
     // Edit
     $(document).on('click', '.btn-edit', function(e) {
         e.stopPropagation();
@@ -652,7 +606,13 @@ $(document).ready(function() {
         $('#editForm')[0].reset();
         $('#edit_id').val(id);
         $.get('/cater/' + id, function(data) {
-            $('#edit_id_pelanggan').val(data.id_pelanggan);
+            var $pel = $('#edit_id_pelanggan');
+            if (data.pelanggan) {
+                var newOption = new Option(data.pelanggan.nama, data.id_pelanggan, true, true);
+                $pel.append(newOption).trigger('change');
+            } else {
+                $pel.val(data.id_pelanggan).trigger('change');
+            }
             $('#edit_id_petugas').val(data.id_petugas);
             $('#edit_id_kondisi').val(data.id_kondisi);
             $('#edit_waktu').val(data.waktu ? new Date(data.waktu).toISOString().slice(0, 16) : '');
@@ -725,7 +685,7 @@ $(document).ready(function() {
             id_kondisi: $('#filter_kondisi').val(),
             bulan: $('#filter_bulan').val(),
             tahun: $('#filter_tahun').val(),
-            search: $('#filter_search').val()
+            search: $('#tableSearch').val()
         });
         window.location.href = '/cater/excel?' + params;
     });

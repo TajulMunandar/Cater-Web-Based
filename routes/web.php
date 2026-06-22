@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/peta', [PetaPelangganController::class, 'index'])->name('peta.index');
         Route::get('data-peta', [PetaPelangganController::class, 'data'])->name('pelanggan.data-peta');
         Route::get('data', [PelangganController::class, 'data'])->name('pelanggan.data');
+        Route::get('select2', [PelangganController::class, 'select2'])->name('pelanggan.select2');
         // Pelanggan Baru - using 'baru' path
         Route::get('baru', [PelangganBaruController::class, 'index'])->name('pelanggan.baru.index');
         Route::post('baru', [PelangganBaruController::class, 'store'])->name('pelanggan.baru.store');

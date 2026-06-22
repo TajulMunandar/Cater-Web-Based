@@ -23,11 +23,13 @@ class User extends Authenticatable
         'email',
         'password',
         'level',
+        'api_token',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'api_token',
     ];
 
     /**

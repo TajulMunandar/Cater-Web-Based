@@ -72,4 +72,9 @@ class Petugas extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function pelangganDetails()
+    {
+        return $this->hasMany(PelangganDetail::class, 'id_petugas');
+    }
 }
