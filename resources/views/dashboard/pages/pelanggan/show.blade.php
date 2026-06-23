@@ -236,7 +236,7 @@
                     @foreach($pelanggan->FotoPelanggan as $foto)
                     <div class="col-md-3 mb-3">
                         <div class="card">
-                            <img src="{{ \Illuminate\Support\Facades\Storage::url($foto->foto) }}" class="card-img-top" alt="Foto" style="height: 150px; object-fit: cover;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22><rect fill=%22%23f8f9fa%22 width=%22300%22 height=%22200%22/><text fill=%22%236c757d%22 font-size=%2216%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>Gambar Tidak Tersedia</text></svg>'; this.onerror=null;">
+                            <img src="{{ str_starts_with($foto->foto, 'http') ? $foto->foto : \Illuminate\Support\Facades\Storage::url($foto->foto) }}" class="card-img-top" alt="Foto" style="height: 150px; object-fit: cover;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22><rect fill=%22%23f8f9fa%22 width=%22300%22 height=%22200%22/><text fill=%22%236c757d%22 font-size=%2216%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>Gambar Tidak Tersedia</text></svg>'; this.onerror=null;">
                             <div class="card-body text-center p-2">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="hapus_foto[]" value="{{ $foto->id }}" id="hapus_foto_{{ $foto->id }}">

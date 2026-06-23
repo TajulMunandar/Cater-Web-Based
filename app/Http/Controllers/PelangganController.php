@@ -61,7 +61,7 @@ class PelangganController extends Controller
             ->addColumn('foto', function ($row) {
                 if ($row->FotoPelanggan && $row->FotoPelanggan->count() > 0) {
                     $foto = $row->FotoPelanggan->first();
-                    $url = Storage::url($foto->foto);
+                    $url = str_starts_with($foto->foto, 'http') ? $foto->foto : Storage::url($foto->foto);
                     $nama = basename($foto->foto);
                     return '<div class="d-flex align-items-center gap-2">
                         <img src="' . $url . '" width="45" height="45" style="object-fit:cover;border-radius:6px;" alt="Foto" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2245%22 height=%2245%22%3E%3Crect fill=%22%23f8f9fa%22 width=%2245%22 height=%2245%22/%3E%3Ctext fill=%22%236c757d%22 font-size=%228%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22%3ENo%20Img%3C/text%3E%3C/svg%3E\';this.onerror=null;">
@@ -74,7 +74,8 @@ class PelangganController extends Controller
             })
             ->addColumn('foto_url', function ($row) {
                 if ($row->FotoPelanggan && $row->FotoPelanggan->count() > 0) {
-                    return Storage::url($row->FotoPelanggan->first()->foto);
+                    $fotoPath = $row->FotoPelanggan->first()->foto;
+                    return str_starts_with($fotoPath, 'http') ? $fotoPath : Storage::url($fotoPath);
                 }
                 return null;
             })
