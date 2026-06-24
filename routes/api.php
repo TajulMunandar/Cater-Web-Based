@@ -12,7 +12,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
 
     Route::get('/pelanggan/belum-dicatat', [PelangganController::class, 'belumDicatat']);
+    Route::get('/pelanggan/semua', [PelangganController::class, 'semua']);
 
     Route::post('/catat-meter', [CatatMeterController::class, 'store']);
+    Route::get('/catat-meter', [CatatMeterController::class, 'index']);
     Route::get('/kondisi', [CatatMeterController::class, 'kondisi']);
 });

@@ -14,6 +14,32 @@ use Illuminate\Support\Facades\Storage;
 
 class CatatMeterController extends Controller
 {
+    public function index(Request $request): JsonResponse
+    {
+        $petugas = $request->user()->petugas;
+
+        $recordings = CatatMeter::where('id_petugas', $petugas->id)
+            ->with(['pelanggan:id,nama,no_sambu', 'kondisiMeter:id,kondisi', 'fotoCater'])
+            ->orderBy('waktu', 'desc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'id_pelanggan' => $item->id_pelanggan,
+                    'customer_name' => $item->pelanggan->nama ?? '',
+                    'customer_no' => $item->pelanggan->no_sambu ?? '',
+                    'stand' => $item->stand,
+                    'waktu' => $item->waktu,
+                    'gps' => $item->gps,
+                    'id_kondisi' => $item->id_kondisi,
+                    'kondisi' => $item->kondisiMeter->kondisi ?? '',
+                    'foto' => $item->fotoCater->first()?->foto,
+                    'created_at' => $item->created_at->toIso8601String(),
+                ];
+            });
+
+        return response()->json(['data' => $recordings]);
+    }
     public function store(Request $request): JsonResponse
     {
         $request->validate([
