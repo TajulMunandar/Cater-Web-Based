@@ -9,6 +9,7 @@ use App\Models\PelangganDetail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PelangganController extends Controller
 {
@@ -28,9 +29,7 @@ class PelangganController extends Controller
             ->whereMonth('waktu', $bulan)
             ->pluck('id_pelanggan');
 
-        $pelanggans = Pelanggan::with(['rute.wilayah', 'golongan', 'PelangganDetail' => function ($q) use ($petugas) {
-                $q->where('id_petugas', $petugas->id);
-            }])
+        $pelanggans = Pelanggan::with(['rute.wilayah', 'golongan', 'PelangganDetail', 'FotoPelanggan'])
             ->whereIn('id', $pelangganIds)
             ->whereNotIn('id', $sudahDicatat)
             ->where('status', Pelanggan::STATUS_AKTIF)
@@ -51,6 +50,11 @@ class PelangganController extends Controller
                 'total' => $pelanggans->count(),
                 'pelanggans' => $pelanggans->map(function ($p) {
                     $detail = $p->PelangganDetail->first();
+                    $fotoUrl = null;
+                    if ($p->FotoPelanggan && $p->FotoPelanggan->count() > 0) {
+                        $fotoPath = $p->FotoPelanggan->first()->foto;
+                        $fotoUrl = str_starts_with($fotoPath, 'http') ? $fotoPath : Storage::url($fotoPath);
+                    }
                     return [
                         'id' => $p->id,
                         'no_sambu' => $p->no_sambu,
@@ -61,6 +65,7 @@ class PelangganController extends Controller
                         'long' => (float) $p->long,
                         'urutan' => $detail ? $detail->urutan : 0,
                         'stand_terakhir' => $detail ? $detail->stand_terakhir : 0,
+                        'foto' => $fotoUrl,
                         'rute' => $p->rute ? [
                             'rute' => $p->rute->rute,
                             'kode' => $p->rute->kode,
@@ -95,7 +100,7 @@ class PelangganController extends Controller
 
         $pelanggans = Pelanggan::with(['rute.wilayah', 'golongan', 'PelangganDetail' => function ($q) use ($petugas) {
                 $q->where('id_petugas', $petugas->id);
-            }])
+            }, 'FotoPelanggan'])
             ->whereIn('id', $pelangganIds)
             ->where('status', Pelanggan::STATUS_AKTIF)
             ->orderBy(
@@ -121,6 +126,11 @@ class PelangganController extends Controller
                 'pelanggans' => $pelanggans->map(function ($p) use ($catatMeters) {
                     $detail = $p->PelangganDetail->first();
                     $catatMeter = $catatMeters->get($p->id);
+                    $fotoUrl = null;
+                    if ($p->FotoPelanggan && $p->FotoPelanggan->count() > 0) {
+                        $fotoPath = $p->FotoPelanggan->first()->foto;
+                        $fotoUrl = str_starts_with($fotoPath, 'http') ? $fotoPath : Storage::url($fotoPath);
+                    }
                     return [
                         'id' => $p->id,
                         'no_sambu' => $p->no_sambu,
@@ -133,6 +143,7 @@ class PelangganController extends Controller
                         'stand_terakhir' => $detail ? $detail->stand_terakhir : 0,
                         'is_recorded' => $catatMeter !== null,
                         'stand_baru' => $catatMeter ? (int) $catatMeter->stand : null,
+                        'foto' => $fotoUrl,
                         'rute' => $p->rute ? [
                             'rute' => $p->rute->rute,
                             'kode' => $p->rute->kode,
