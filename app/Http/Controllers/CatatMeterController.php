@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CatatMeter;
 use App\Models\KondisiMeter;
 use App\Models\Pelanggan;
+use App\Models\PelangganDetail;
 use App\Models\Petugas;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
@@ -24,9 +25,14 @@ class CatatMeterController extends Controller
 
     public function data(Request $request)
     {
-        $catatMeter = CatatMeter::with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter', 'FotoCater'])
-            ->select(['id', 'id_pelanggan', 'id_petugas', 'id_kondisi', 'waktu', 'stand', 'gps', 'status']);
+        // Admin melihat SEMUA data (termasuk yang ditolak) agar bisa diverifikasi ulang.
+        $catatMeter = CatatMeter::withoutGlobalScopes()
+            ->with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter', 'FotoCater'])
+            ->select(['id', 'id_pelanggan', 'id_petugas', 'id_kondisi', 'waktu', 'stand', 'gps', 'status', 'status_verifikasi', 'alasan_tolak']);
 
+        if ($request->filled('status_verifikasi')) {
+            $catatMeter->where('status_verifikasi', $request->status_verifikasi);
+        }
         if ($request->filled('id_petugas')) {
             $catatMeter->where('id_petugas', $request->id_petugas);
         }
@@ -102,14 +108,94 @@ class CatatMeterController extends Controller
             ->addColumn('petugas', function ($row) {
                 return $row->Petugas ? $row->Petugas->nama : '';
             })
+            ->addColumn('verifikasi_badge', function ($row) {
+                $map = [
+                    CatatMeter::VERIF_PENDING => ['Menunggu', '#fef3c7', '#b45309'],
+                    CatatMeter::VERIF_APPROVED => ['Disetujui', '#dcfce7', '#15803d'],
+                    CatatMeter::VERIF_DECLINED => ['Ditolak', '#fee2e2', '#dc2626'],
+                ];
+                [$label, $bg, $text] = $map[$row->status_verifikasi] ?? ['-', '#f1f5f9', '#475569'];
+                $html = '<span style="background:' . $bg . ';color:' . $text . ';border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;display:inline-block;">' . $label . '</span>';
+                if ($row->status_verifikasi === CatatMeter::VERIF_DECLINED && $row->alasan_tolak) {
+                    $html .= '<div style="font-size:11px;color:#64748b;margin-top:4px;max-width:180px;white-space:normal;">' . e($row->alasan_tolak) . '</div>';
+                }
+                return $html;
+            })
             ->addColumn('action', function ($row) {
-                return '<div style="display:flex;gap:4px;justify-content:center;">
-                            <button class="btn-action btn-edit" data-id="' . $row->id . '" title="Edit"><i class="fas fa-pen-to-square"></i></button>
+                $verif = '';
+                if ($row->status_verifikasi !== CatatMeter::VERIF_APPROVED) {
+                    $verif .= '<button class="btn-action btn-approve" data-id="' . $row->id . '" title="Setujui"><i class="fas fa-check"></i></button>';
+                }
+                if ($row->status_verifikasi !== CatatMeter::VERIF_DECLINED) {
+                    $verif .= '<button class="btn-action btn-decline" data-id="' . $row->id . '" title="Tolak"><i class="fas fa-xmark"></i></button>';
+                }
+                return '<div style="display:flex;gap:4px;justify-content:center;">'
+                    . $verif .
+                    '<button class="btn-action btn-edit" data-id="' . $row->id . '" title="Edit"><i class="fas fa-pen-to-square"></i></button>
                             <button class="btn-action btn-delete" data-id="' . $row->id . '" title="Hapus"><i class="fas fa-trash"></i></button>
                         </div>';
             })
-            ->rawColumns(['foto', 'kondisi_badge', 'action'])
+            ->rawColumns(['foto', 'kondisi_badge', 'verifikasi_badge', 'action'])
             ->make(true);
+    }
+
+    /**
+     * Setujui data catat meter.
+     */
+    public function approve(string $id)
+    {
+        $catatMeter = CatatMeter::withoutGlobalScopes()->findOrFail($id);
+
+        $catatMeter->update([
+            'status_verifikasi' => CatatMeter::VERIF_APPROVED,
+            'alasan_tolak' => null,
+            'verifikasi_oleh' => auth()->id(),
+            'verifikasi_at' => now(),
+            'notif_dibaca_at' => null,
+        ]);
+
+        return response()->json(['success' => 'Data catat meter disetujui.']);
+    }
+
+    /**
+     * Tolak data catat meter. Alasan wajib diisi dan akan dikirim ke petugas
+     * lewat API; pelanggan kembali berstatus "belum tercatat" di aplikasi mobile.
+     */
+    public function decline(Request $request, string $id)
+    {
+        $request->validate([
+            'alasan_tolak' => 'required|string|min:3|max:500',
+        ], [
+            'alasan_tolak.required' => 'Alasan penolakan wajib diisi.',
+            'alasan_tolak.min' => 'Alasan penolakan terlalu pendek.',
+        ]);
+
+        $catatMeter = CatatMeter::withoutGlobalScopes()->findOrFail($id);
+
+        $catatMeter->update([
+            'status_verifikasi' => CatatMeter::VERIF_DECLINED,
+            'alasan_tolak' => trim($request->alasan_tolak),
+            'verifikasi_oleh' => auth()->id(),
+            'verifikasi_at' => now(),
+            'notif_dibaca_at' => null, // memicu notifikasi baru di mobile
+        ]);
+
+        // Kembalikan "stand terakhir" ke data valid sebelumnya (bila ada),
+        // supaya stand yang ditolak tidak jadi acuan pencatatan berikutnya.
+        $sebelumnya = CatatMeter::where('id_pelanggan', $catatMeter->id_pelanggan)
+            ->where('id_petugas', $catatMeter->id_petugas)
+            ->where('id', '!=', $catatMeter->id)
+            ->where('waktu', '<', $catatMeter->waktu)
+            ->orderByDesc('waktu')
+            ->first();
+
+        if ($sebelumnya) {
+            PelangganDetail::where('id_pelanggan', $catatMeter->id_pelanggan)
+                ->where('id_petugas', $catatMeter->id_petugas)
+                ->update(['stand_terakhir' => $sebelumnya->stand]);
+        }
+
+        return response()->json(['success' => 'Data catat meter ditolak dan dikembalikan ke petugas.']);
     }
 
     public function dataTidakTerdaftar(Request $request)
@@ -197,7 +283,7 @@ class CatatMeterController extends Controller
 
     public function show(string $id)
     {
-        $catatMeter = CatatMeter::with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter', 'FotoCater'])->findOrFail($id);
+        $catatMeter = CatatMeter::withoutGlobalScopes()->with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter', 'FotoCater'])->findOrFail($id);
         $data = $catatMeter->toArray();
         $pel = $catatMeter->Pelanggan;
         $foto = $catatMeter->FotoCater->first();
@@ -232,7 +318,7 @@ class CatatMeterController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $catatMeter = CatatMeter::findOrFail($id);
+        $catatMeter = CatatMeter::withoutGlobalScopes()->findOrFail($id);
         $catatMeter->update($request->only(['id_pelanggan', 'id_petugas', 'id_kondisi', 'waktu', 'stand', 'gps', 'status']));
 
         if ($request->hasFile('foto')) {
@@ -250,7 +336,7 @@ class CatatMeterController extends Controller
 
     public function destroy(string $id)
     {
-        $catatMeter = CatatMeter::findOrFail($id);
+        $catatMeter = CatatMeter::withoutGlobalScopes()->findOrFail($id);
 
         foreach ($catatMeter->FotoCater as $foto) {
             Storage::disk('public')->delete($foto->foto);
@@ -265,16 +351,20 @@ class CatatMeterController extends Controller
     public function updateStand(Request $request, string $id)
     {
         $request->validate(['stand' => 'required|integer']);
-        $catatMeter = CatatMeter::findOrFail($id);
+        $catatMeter = CatatMeter::withoutGlobalScopes()->findOrFail($id);
         $catatMeter->update(['stand' => $request->stand]);
         return response()->json(['success' => 'Stand meter berhasil diperbarui.']);
     }
 
     public function excel(Request $request)
     {
-        $catatMeter = CatatMeter::with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter'])
-            ->select(['id', 'id_pelanggan', 'id_petugas', 'id_kondisi', 'waktu', 'stand', 'gps', 'status']);
+        $catatMeter = CatatMeter::withoutGlobalScopes()
+            ->with(['Pelanggan.rute.wilayah', 'Petugas', 'KondisiMeter'])
+            ->select(['id', 'id_pelanggan', 'id_petugas', 'id_kondisi', 'waktu', 'stand', 'gps', 'status', 'status_verifikasi', 'alasan_tolak']);
 
+        if ($request->filled('status_verifikasi')) {
+            $catatMeter->where('status_verifikasi', $request->status_verifikasi);
+        }
         if ($request->filled('id_petugas')) {
             $catatMeter->where('id_petugas', $request->id_petugas);
         }
@@ -313,7 +403,7 @@ class CatatMeterController extends Controller
 
         $callback = function () use ($data) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['No', 'Nama', 'Wilayah', 'Stand Meter', 'Waktu', 'Kondisi Meter', 'Petugas', 'GPS', 'Status']);
+            fputcsv($handle, ['No', 'Nama', 'Wilayah', 'Stand Meter', 'Waktu', 'Kondisi Meter', 'Petugas', 'GPS', 'Status', 'Verifikasi', 'Alasan Tolak']);
 
             $no = 1;
             foreach ($data as $row) {
@@ -328,6 +418,8 @@ class CatatMeterController extends Controller
                     $row->Petugas ? $row->Petugas->nama : '',
                     $row->gps,
                     $row->status == 1 ? 'Aktif' : 'Tidak Aktif',
+                    ['pending' => 'Menunggu', 'approved' => 'Disetujui', 'declined' => 'Ditolak'][$row->status_verifikasi] ?? '',
+                    $row->status_verifikasi === 'declined' ? $row->alasan_tolak : '',
                 ]);
             }
             fclose($handle);

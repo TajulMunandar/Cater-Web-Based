@@ -80,6 +80,8 @@ Route::middleware('auth')->group(function () {
         Route::put('{cater}', [CatatMeterController::class, 'update'])->name('cater.update');
         Route::delete('{cater}', [CatatMeterController::class, 'destroy'])->name('cater.destroy');
         Route::post('{cater}/update-stand', [CatatMeterController::class, 'updateStand'])->name('cater.update-stand');
+        Route::post('{cater}/approve', [CatatMeterController::class, 'approve'])->name('cater.approve');
+        Route::post('{cater}/decline', [CatatMeterController::class, 'decline'])->name('cater.decline');
     });
 
     // Grouped routes for '/rekap'

@@ -97,6 +97,15 @@ $tahunList = range(date('Y'), date('Y') - 5);
                             @endforeach
                         </select>
                     </div>
+                    <div style="flex:1;min-width:140px;">
+                        <label style="display:block;font-size:12px;color:#64748b;margin-bottom:4px;font-weight:500;">Verifikasi</label>
+                        <select id="filter_verifikasi" class="select2-filter" data-placeholder="-- Semua Status --" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;color:#1e293b;background:#fff;outline:none;">
+                            <option value="">-- SEMUA STATUS --</option>
+                            <option value="pending">Menunggu</option>
+                            <option value="approved">Disetujui</option>
+                            <option value="declined">Ditolak</option>
+                        </select>
+                    </div>
                     <div style="display:flex;gap:6px;align-items:flex-end;padding-bottom:1px;">
                         <button id="filter_apply" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
                             <i class="fas fa-search" style="font-size:12px;"></i> Filter
@@ -149,6 +158,7 @@ $tahunList = range(date('Y'), date('Y') - 5);
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Wilayah ⇅</th>
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Kondisi Meter ⇅</th>
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Petugas ⇅</th>
+                                <th style="font-weight:700;font-size:13px;text-align:center;">Verifikasi</th>
                                 <th style="font-weight:700;font-size:13px;text-align:center;">Proses ⇅</th>
                             </tr>
                         </thead>
@@ -233,6 +243,32 @@ $tahunList = range(date('Y'), date('Y') - 5);
                     <button type="submit" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;">Simpan Perubahan</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Decline Modal -->
+<div class="modal fade" id="declineModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius:16px;overflow:hidden;border:none;">
+            <div style="background:#ef4444;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
+                <h5 style="color:#fff;font-weight:700;font-size:16px;margin:0;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-xmark"></i> Tolak Catat Meter
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div style="padding:24px;">
+                <p style="margin:0 0 12px;font-size:13px;color:#64748b;">
+                    Data akan dikembalikan ke petugas dan pelanggan kembali berstatus <b>belum tercatat</b> di aplikasi.
+                </p>
+                <label for="decline_alasan" style="display:block;font-size:12px;color:#64748b;margin-bottom:4px;font-weight:600;">Alasan penolakan <span style="color:#ef4444;">*</span></label>
+                <textarea id="decline_alasan" rows="4" maxlength="500" placeholder="Contoh: Foto meter buram / angka stand tidak sesuai foto" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:13px;color:#1e293b;outline:none;resize:vertical;"></textarea>
+                <div id="decline_error" style="display:none;color:#ef4444;font-size:12px;margin-top:6px;"></div>
+            </div>
+            <div style="padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;">Batal</button>
+                <button type="button" id="confirmDecline" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;">Tolak Data</button>
+            </div>
         </div>
     </div>
 </div>
@@ -422,6 +458,8 @@ th { background:#1e3a8a !important; color:#fff !important; font-weight:700 !impo
 .btn-action:hover { opacity:0.85; }
 .btn-edit { background:#f59e0b;color:#fff; }
 .btn-delete { background:#ef4444;color:#fff;margin-left:4px; }
+.btn-approve { background:#10b981;color:#fff; }
+.btn-decline { background:#f97316;color:#fff;margin-left:4px; }
 
 /* Photo thumb hover */
 .photo-thumb { transition:opacity 0.15s, box-shadow 0.15s; border-radius:8px;display:inline-block; }
@@ -513,6 +551,7 @@ $(document).ready(function() {
                 d.id_kondisi = $('#filter_kondisi').val();
                 d.bulan = $('#filter_bulan').val();
                 d.tahun = $('#filter_tahun').val();
+                d.status_verifikasi = $('#filter_verifikasi').val();
             }
         },
         columns: [
@@ -524,6 +563,7 @@ $(document).ready(function() {
             { data: 'wilayah', name: 'wilayah' },
             { data: 'kondisi_badge', name: 'kondisi_badge', orderable: false, searchable: false },
             { data: 'petugas', name: 'petugas' },
+            { data: 'verifikasi_badge', name: 'status_verifikasi', orderable: false, searchable: false },
             { data: 'action', orderable: false, searchable: false }
         ],
         language: {
@@ -549,12 +589,12 @@ $(document).ready(function() {
     }).on('processing.dt', function(e, settings, processing) {
         var tbody = $('#myTable tbody');
         if (processing) {
-            var cols = 9;
+            var cols = 10;
             var skeletonRows = '';
             for (var i = 0; i < 8; i++) {
                 skeletonRows += '<tr class="skeleton-row">';
                 for (var j = 0; j < cols; j++) {
-                    var w = [20, 40, 80, 90, 100, 80, 70, 90, 60][j] || 60;
+                    var w = [20, 40, 80, 90, 100, 80, 70, 90, 70, 60][j] || 60;
                     skeletonRows += '<td><div class="skeleton-bar" style="width:' + w + 'px;"></div></td>';
                 }
                 skeletonRows += '</tr>';
@@ -564,7 +604,7 @@ $(document).ready(function() {
     });
 
     // Reload table when filters change
-    $('#filter_petugas, #filter_wilayah, #filter_kondisi, #filter_bulan, #filter_tahun').on('change', function() {
+    $('#filter_petugas, #filter_wilayah, #filter_kondisi, #filter_bulan, #filter_tahun, #filter_verifikasi').on('change', function() {
         table.ajax.reload();
     });
     $('#pageLengthSelect').on('change', function() {
@@ -652,6 +692,70 @@ $(document).ready(function() {
         });
     });
 
+    // Approve
+    $(document).on('click', '.btn-approve', function(e) {
+        e.stopPropagation();
+        var id = $(this).data('id');
+        Swal.fire({
+            icon: 'question',
+            title: 'Setujui data ini?',
+            text: 'Data catat meter akan ditandai disetujui.',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Setujui',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#10b981'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            $.ajax({
+                url: '/cater/' + id + '/approve',
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                success: function(response) {
+                    table.ajax.reload(null, false);
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: response.success, timer: 1500, showConfirmButton: false });
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat menyetujui data' });
+                }
+            });
+        });
+    });
+
+    // Decline (alasan wajib)
+    $(document).on('click', '.btn-decline', function(e) {
+        e.stopPropagation();
+        $('#confirmDecline').data('id', $(this).data('id'));
+        $('#decline_alasan').val('');
+        $('#decline_error').hide().text('');
+        new bootstrap.Modal(document.getElementById('declineModal')).show();
+    });
+
+    $('#confirmDecline').click(function() {
+        var id = $(this).data('id');
+        var alasan = $.trim($('#decline_alasan').val());
+        if (alasan.length < 3) {
+            $('#decline_error').text('Alasan penolakan wajib diisi.').show();
+            return;
+        }
+        $.ajax({
+            url: '/cater/' + id + '/decline',
+            method: 'POST',
+            data: { alasan_tolak: alasan },
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function(response) {
+                bootstrap.Modal.getInstance(document.getElementById('declineModal')).hide();
+                table.ajax.reload(null, false);
+                Swal.fire({ icon: 'success', title: 'Berhasil', text: response.success, timer: 1800, showConfirmButton: false });
+            },
+            error: function(xhr) {
+                var msg = xhr.responseJSON && xhr.responseJSON.errors
+                    ? Object.values(xhr.responseJSON.errors).flat().join(', ')
+                    : 'Terjadi kesalahan saat menolak data';
+                $('#decline_error').text(msg).show();
+            }
+        });
+    });
+
     // Delete
     $(document).on('click', '.btn-delete', function(e) {
         e.stopPropagation();
@@ -685,6 +789,7 @@ $(document).ready(function() {
             id_kondisi: $('#filter_kondisi').val(),
             bulan: $('#filter_bulan').val(),
             tahun: $('#filter_tahun').val(),
+            status_verifikasi: $('#filter_verifikasi').val(),
             search: $('#tableSearch').val()
         });
         window.location.href = '/cater/excel?' + params;

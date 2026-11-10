@@ -25,6 +25,7 @@ class PelangganController extends Controller
 
         $sudahDicatat = DB::table('catat_meters')
             ->whereIn('id_pelanggan', $pelangganIds)
+            ->where('status_verifikasi', '!=', CatatMeter::VERIF_DECLINED)
             ->whereYear('waktu', $tahun)
             ->whereMonth('waktu', $bulan)
             ->pluck('id_pelanggan');
@@ -98,6 +99,17 @@ class PelangganController extends Controller
             ->get()
             ->keyBy('id_pelanggan');
 
+        // Pencatatan yang ditolak bulan ini: pelanggan tetap dianggap BELUM
+        // tercatat (is_recorded = false), tapi dikirim alasannya ke mobile.
+        $ditolak = CatatMeter::withoutGlobalScopes()
+            ->whereIn('id_pelanggan', $pelangganIds)
+            ->where('status_verifikasi', CatatMeter::VERIF_DECLINED)
+            ->whereYear('waktu', $tahun)
+            ->whereMonth('waktu', $bulan)
+            ->orderBy('id')
+            ->get()
+            ->keyBy('id_pelanggan');
+
         $pelanggans = Pelanggan::with(['rute.wilayah', 'golongan', 'PelangganDetail' => function ($q) use ($petugas) {
                 $q->where('id_petugas', $petugas->id);
             }, 'FotoPelanggan'])
@@ -123,9 +135,10 @@ class PelangganController extends Controller
                 'total' => $total,
                 'total_tercatat' => $totalTercatat,
                 'total_belum' => $total - $totalTercatat,
-                'pelanggans' => $pelanggans->map(function ($p) use ($catatMeters) {
+                'pelanggans' => $pelanggans->map(function ($p) use ($catatMeters, $ditolak) {
                     $detail = $p->PelangganDetail->first();
                     $catatMeter = $catatMeters->get($p->id);
+                    $penolakan = $catatMeter ? null : $ditolak->get($p->id);
                     $fotoUrl = null;
                     if ($p->FotoPelanggan && $p->FotoPelanggan->count() > 0) {
                         $fotoPath = $p->FotoPelanggan->first()->foto;
@@ -143,6 +156,11 @@ class PelangganController extends Controller
                         'stand_terakhir' => $detail ? $detail->stand_terakhir : 0,
                         'is_recorded' => $catatMeter !== null,
                         'stand_baru' => $catatMeter ? (int) $catatMeter->stand : null,
+                        // null = belum dicatat | pending | approved | declined
+                        'status_verifikasi' => $catatMeter
+                            ? $catatMeter->status_verifikasi
+                            : ($penolakan ? CatatMeter::VERIF_DECLINED : null),
+                        'alasan_tolak' => $penolakan?->alasan_tolak,
                         'foto' => $fotoUrl,
                         'rute' => $p->rute ? [
                             'rute' => $p->rute->rute,

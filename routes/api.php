@@ -16,5 +16,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/catat-meter', [CatatMeterController::class, 'store']);
     Route::get('/catat-meter', [CatatMeterController::class, 'index']);
+    Route::get('/catat-meter/ditolak', [CatatMeterController::class, 'ditolak']);
+    Route::post('/catat-meter/ditolak/dibaca', [CatatMeterController::class, 'ditolakDibaca']);
     Route::get('/kondisi', [CatatMeterController::class, 'kondisi']);
 });

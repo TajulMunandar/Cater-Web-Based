@@ -76,6 +76,7 @@ class DashboardController extends Controller
 
             $tercatat = \Illuminate\Support\Facades\DB::table('catat_meters as c')
                 ->selectRaw('COUNT(DISTINCT c.id_pelanggan) as total')
+                ->where('c.status_verifikasi', '!=', 'declined')
                 ->whereBetween('c.waktu', [$start, $end])
                 ->value('total');
 
