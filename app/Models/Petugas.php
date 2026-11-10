@@ -25,6 +25,7 @@ class Petugas extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id_petugas_billing',
         'photo',
         'nama',
         'nip',

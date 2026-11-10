@@ -32,6 +32,7 @@ class Pelanggan extends Model
     const STATUS_LIST = [self::STATUS_AKTIF, self::STATUS_NON_AKTIF];
 
     protected $fillable = [
+        'id_pelanggan_billing',
         'no_sambu',
         'nama',
         'alamat',

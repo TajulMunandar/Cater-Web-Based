@@ -19,6 +19,7 @@ class KondisiMeter extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id_kondisi_billing',
         'kondisi',
         'keterangan',
         'kode',

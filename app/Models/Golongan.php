@@ -20,6 +20,7 @@ class Golongan extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id_golongan_billing',
         'kode',
         'nama',
         'tarif_per_m3',

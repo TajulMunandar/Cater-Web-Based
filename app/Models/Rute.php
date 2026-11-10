@@ -10,6 +10,8 @@ class Rute extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id_rute_billing',
+        'id_wilayah_billing',
         'id_wilayah',
         'rute',
         'kode',
