@@ -8,6 +8,7 @@ use App\Models\Pelanggan;
 use App\Models\PelangganDetail;
 use App\Models\Petugas;
 use App\Models\Wilayah;
+use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
@@ -161,7 +162,7 @@ class CatatMeterController extends Controller
      * Tolak data catat meter. Alasan wajib diisi dan akan dikirim ke petugas
      * lewat API; pelanggan kembali berstatus "belum tercatat" di aplikasi mobile.
      */
-    public function decline(Request $request, string $id)
+    public function decline(Request $request, string $id, PushNotificationService $push)
     {
         $request->validate([
             'alasan_tolak' => 'required|string|min:3|max:500',
@@ -193,6 +194,18 @@ class CatatMeterController extends Controller
             PelangganDetail::where('id_pelanggan', $catatMeter->id_pelanggan)
                 ->where('id_petugas', $catatMeter->id_petugas)
                 ->update(['stand_terakhir' => $sebelumnya->stand]);
+        }
+
+        // Push notifikasi (FCM) ke HP petugas agar langsung tahu catatannya ditolak.
+        $catatMeter->loadMissing(['Pelanggan', 'Petugas']);
+        $userId = $catatMeter->Petugas?->user_id;
+        if ($userId) {
+            $push->sendToUser(
+                $userId,
+                'Catatan meter ditolak',
+                ($catatMeter->Pelanggan->nama ?? 'Pelanggan') . ': ' . $catatMeter->alasan_tolak,
+                ['route' => '/ditolak', 'id_cater' => $catatMeter->id]
+            );
         }
 
         return response()->json(['success' => 'Data catat meter ditolak dan dikembalikan ke petugas.']);

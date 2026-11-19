@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatatMeterController;
+use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\PelangganController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,4 +20,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/catat-meter/ditolak', [CatatMeterController::class, 'ditolak']);
     Route::post('/catat-meter/ditolak/dibaca', [CatatMeterController::class, 'ditolakDibaca']);
     Route::get('/kondisi', [CatatMeterController::class, 'kondisi']);
+
+    Route::post('/fcm-token', [FcmTokenController::class, 'store']);
+    Route::post('/fcm-token/hapus', [FcmTokenController::class, 'destroy']);
 });
